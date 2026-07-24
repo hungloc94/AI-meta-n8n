@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__get_page_text",
+      "mcp__Claude_in_Chrome__read_page",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:5678\" -TimeoutSec 5 -UseBasicParsing; \"STATUS: $\\($r.StatusCode\\)\" } catch { \"ERROR: $_\" })",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:5678/api/v1/workflows\" -UseBasicParsing -TimeoutSec 10; $r.StatusCode; $r.Content | ConvertFrom-Json | Select-Object -ExpandProperty data | Select-Object id, name, active | Format-Table -AutoSize)",
+      "Bash(docker exec *)",
+      "PowerShell(docker exec n8n-msp sh -c \"ls /home/node/.n8n/\" 2>&1)",
+      "PowerShell(docker cp n8n-msp:/home/node/.n8n/database.sqlite \"$env:TEMP\\\\n8n_readonly.sqlite\" 2>&1; Write-Output \"Copied: $env:TEMP\\\\n8n_readonly.sqlite\")",
+      "PowerShell(New-Item -ItemType Directory -Path \"D:\\\\AI_Project\\\\n8n-meta-ads\\\\docs\\\\workflows\" -Force)",
+      "Bash(find \"D:\\\\AI_Project\" -name \"PROJECT_BRAIN.md\" 2>/dev/null)",
+      "Bash(grep -i \"^Project$\")",
+      "Bash(grep -i \"^Task$\")",
+      "Bash(grep -i \"^ARCHIVE$\")",
+      "PowerShell(New-Item *)"
+    ]
+  }
+}
