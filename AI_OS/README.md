@@ -988,111 +988,222 @@ Nếu STATUS.md không ghi rõ đang ở bước nào → AI hỏi Human ngay, k
 # 5. Backup Strategy
 
 ## Mục tiêu
+Định nghĩa vai trò của Git và Backup, thời điểm, phạm vi
+và quy trình khôi phục để luôn có thể restore hệ thống khi cần.
 
-Định nghĩa thời điểm, phạm vi và quy tắc Backup để luôn có thể khôi phục khi cần.
-
-> **Nguyên tắc cốt lõi:** Backup trước khi thay đổi. Backup sau khi hoàn thành. Không có ngoại lệ.
+> **Nguyên tắc cốt lõi:**
+> - Git = Source of Configuration — hệ thống nên có gì
+> - Backup = Source of Runtime — hệ thống đang chạy như thế nào
+> - Restore nhỏ (xóa nhầm workflow) → dùng Git
+> - Restore lớn (database hỏng, server chết) → dùng Backup
 
 ---
+
+## Phân biệt Git và Backup
+
+### Git — lưu cấu hình và tài liệu
+
+| Lưu vào Git | Không lưu vào Git |
+|-------------|-------------------|
+| docker-compose.yml | Database n8n |
+| Caddyfile | Credentials thật |
+| .env.example (không có giá trị thật) | staticData, polling offset |
+| Workflow JSON | .env thật |
+| Script backup/restore | Runtime state |
+| Tài liệu AI OS | |
+
+### Backup — lưu trạng thái vận hành thực tế
+
+| Backup bao gồm |
+|----------------|
+| Docker volume n8n (database + staticData + credentials) |
+| .env thật (mã hóa bằng password riêng — Human giữ password) |
+| manifest.json (git commit + n8n version + ngày backup) |
 
 ## Khi nào phải Backup
 
-| Trigger | Mô tả |
-|---|---|
-| Trước khi thay đổi bất kỳ file nào | Backup file đó trước — xem Safety Rules Chương 2 |
-| Task hoàn thành | Xong 1 Task = Backup ngay toàn bộ Project |
-| Module hoàn thành | Human xác nhận Module xong → Backup ngay |
-| Human yêu cầu | Human nói "backup đi" → Backup ngay |
+| Trigger | AI tự phát hiện? |
 
-> **Lưu ý:** AI không tự quyết định bỏ qua Backup. Mọi trường hợp nghi ngờ → Backup.
+|---------|-----------------|
+
+| Tự động hàng ngày lúc 02:00 | ✅ Cron job tự chạy |
+
+| Trước khi thay đổi bất kỳ file nào | ✅ Theo Safety Rules |
+
+| Task hoàn thành | ✅ AI tự biết |
+
+| Module hoàn thành | ✅ Human xác nhận xong |
+
+| Human yêu cầu | ✅ Human nói trực tiếp |
+
+> Chọn 02:00 vì đây là lúc ít traffic nhất —
+
+> n8n phải tắt tạm thời khi backup volume,
+
+> tránh xung đột với Health Check 07:00.
 
 ---
 
-## Phạm vi Backup
+## Cấu trúc thư mục Backup
 
-> **Backup toàn bộ thư mục Project** — không chọn lọc file.
-
-Lý do: đơn giản, AI không cần phán đoán file nào cần backup. Đến trigger là backup hết.
-
----
-
-## Vị trí lưu Backup
-
-Backup nằm trong thư mục `BACKUP/` cùng cấp với Project:
-
-```text
-Project/
-├── README.md
-├── ROADMAP.md
-├── STATUS.md
-├── RULES.md
-├── Module_1/
-├── Module_2/
-└── BACKUP/
-    ├── 2026-07-10_14-30_task-done_Build-Date-Range-Engine/
-    ├── 2026-07-15_09-00_module-done_Data-Collection/
-    └── 2026-07-19_16-45_human-request/
 ```
+
+BACKUP/
+
+└── 2026-07-25_02-00_daily/
+
+    ├── manifest.json        ← ghi chú backup
+
+    ├── docker-volume.tar.gz ← toàn bộ dữ liệu n8n
+
+    ├── env.enc              ← .env đã mã hóa
+
+    └── version.txt          ← version n8n
+
+```
+
+### manifest.json — phiếu ghi chú mỗi backup
+
+```json
+
+{
+
+  "backup_date": "2026-07-25",
+
+  "backup_type": "daily",
+
+  "git_commit": "4ac87b",
+
+  "n8n_version": "1.103.2"
+
+}
+
+```
+
+Khi cần restore biết ngay: backup này từ commit Git nào,
+
+version n8n nào — không phải đoán.
 
 ---
 
 ## Quy tắc đặt tên Backup
 
 ```
-YYYY-MM-DD_HH-MM_<lý-do>_<tên-cụ-thể-nếu-có>/
-```
 
-| Thành phần | Ý nghĩa | Ví dụ |
-|---|---|---|
-| `YYYY-MM-DD` | Ngày backup | `2026-07-19` |
-| `HH-MM` | Giờ backup | `16-45` |
-| `<lý-do>` | Tại sao backup | `task-done`, `module-done`, `before-change`, `human-request` |
-| `<tên-cụ-thể>` | Tên Task hoặc Module nếu có | `Build-Date-Range-Engine` |
-
-**Ví dụ tên backup:**
+YYYY-MM-DD_HH-MM_<lý-do>/
 
 ```
-2026-07-19_16-45_task-done_Build-Date-Range-Engine/
-2026-07-19_17-00_before-change_PLAN/
-2026-07-20_09-00_module-done_Data-Collection/
-2026-07-20_10-30_human-request/
-```
+
+| Loại | Ví dụ |
+|------|-------|
+| Backup daily tự động | 2026-07-25_02-00_daily/ |
+| Sau khi sửa workflow | 2026-07-25_10-00_workflow_Meta-Report-Yesterday/ |
+| Trước khi thay đổi file | 2026-07-25_14-00_before_PLAN/ |
+| Human yêu cầu | 2026-07-25_16-00_manual/ |
+| Task hoàn thành | 2026-07-25_18-00_task_Deploy-n8n/ |
 
 ---
 
-## Quy trình Backup
+## Retention Policy — giữ bao nhiêu bản
 
-```
-Trigger xảy ra
-        ↓
-AI thông báo Human:
-"Tôi sẽ backup toàn bộ Project trước khi tiếp tục."
-        ↓
-AI tạo thư mục backup theo đúng tên quy chuẩn
-        ↓
-AI copy toàn bộ thư mục Project vào BACKUP/
-(không copy thư mục BACKUP/ vào trong backup)
-        ↓
-AI xác nhận với Human: "Backup xong tại BACKUP/<tên-backup>/"
-        ↓
-Tiếp tục công việc
-```
+| Loại | Giữ bao lâu |
+
+|------|-------------|
+
+| Daily backup | 7 bản gần nhất |
+
+| Weekly backup (thứ 2) | 4 bản gần nhất |
+
+| Task-done backup | Giữ mãi |
+
+---
+
+## Quy trình Backup — giải thích đơn giản
+
+
+
+
+
+
+
+Tắt n8n tạm thời → Đóng cửa hàng để đếm hàng chính xác → Không tắt thì dữ liệu đang ghi dở, backup bị sai
+
+
+
+Sao chép toàn bộ dữ liệu n8n (Docker volume) → Chụp ảnh toàn bộ kho hàng tại thời điểm đó
+
+
+
+Sao chép .env và mã hóa → Chép lại công thức bí mật, khóa lại bằng mật khẩu riêng → Mật khẩu giải mã do Human giữ, không lưu vào hệ thống
+
+
+
+Ghi manifest.json → Phiếu ghi chú: ngày nào, version nào, commit Git nào
+
+
+
+Mở cửa hàng lại → Khởi động n8n tiếp tục chạy
+
+
+
+Xóa backup cũ quá hạn → Dọn kho, không giữ quá nhiều
+
+
+---
+
+## Quy trình Restore
+
+### Restore nhỏ — Xóa nhầm workflow
+
+
+Phát hiện workflow bị mất ↓ Import JSON từ Git ↓ Verify workflow count khớp ↓ Test thủ công workflow vừa restore ↓ PASS → Done
+
+
+### Restore lớn — Database hỏng / Server chết
+
+
+Cài Ubuntu + Docker mới ↓ Clone repo từ Git (lấy docker-compose.yml) ↓ Restore Docker volume từ Backup gần nhất ↓ Giải mã và restore .env ↓ Start n8n ↓ Verify workflow count, credential count ↓ Test từng workflow theo thứ tự dependency ↓ Monitor 30 phút ↓ PASS → Production
+
+
+---
+
+## Kiểm tra Backup định kỳ
+
+> **Backup không test = Backup giả.**
+
+Hàng tuần (thứ 2 lúc 03:00) tự động test restore:
+
+
+
+Lấy backup daily gần nhất ↓ Restore vào thư mục test (không phải production) ↓ Verify n8n start được ↓ Verify workflow count khớp manifest ↓ PASS → Backup hợp lệ FAIL → Alert Human ngay
+
 
 ---
 
 ## Quy tắc bắt buộc
 
 ### Quy tắc 1 — Không bao giờ bỏ qua Backup
-AI không được tự ý bỏ qua bước Backup dù lý do gì. Nếu muốn bỏ qua → hỏi Human.
+AI không tự ý bỏ qua Backup. Muốn bỏ qua → hỏi Human.
 
-### Quy tắc 2 — Không copy BACKUP/ vào trong backup
-Khi backup, chỉ copy nội dung Project — không bao gồm thư mục `BACKUP/` để tránh backup lồng nhau.
+### Quy tắc 2 — Không backup lồng nhau
+Khi backup chỉ copy nội dung Project —
+không bao gồm thư mục BACKUP/ để tránh backup lồng nhau.
 
 ### Quy tắc 3 — Thông báo trước và sau
-AI phải thông báo Human trước khi backup và xác nhận sau khi backup xong — không làm im lặng.
+AI thông báo Human trước khi backup và xác nhận sau khi xong.
 
 ### Quy tắc 4 — Đặt tên đúng quy chuẩn
-Tên backup phải theo đúng format `YYYY-MM-DD_HH-MM_<lý-do>_<tên-cụ-thể>/` để dễ tra cứu và khôi phục sau này.
+Tên backup theo format chuẩn để dễ tra cứu khi restore.
 
 ### Quy tắc 5 — Kiểm tra WORKLOG trước khi Backup
-Trước khi Backup, AI đọc `Task/WORKLOG.md` Signal — nếu còn dòng `[ ]` chưa xử lý thì xử lý hết trước, sau đó mới Backup. Không Backup khi còn Signal chưa xử lý.
+Trước khi Backup, đọc WORKLOG Signal —
+nếu còn dòng [ ] chưa xử lý thì xử lý hết trước, sau đó mới Backup.
+
+### Quy tắc 6 — Workflow sửa xong phải cập nhật Git
+Sau khi workflow test PASS:
+1. Export JSON từ n8n
+2. Commit lên Git
+3. Backup tự động lúc 02:00 capture runtime state
+
+> Git luôn có cấu hình mới nhất.
+> Backup luôn có runtime state mới nhất.
