@@ -116,3 +116,26 @@ Lý do: chứa knowledge base toàn Project (42 CASE + 7 PATTERN)
 không thuộc riêng Task nào — đặt ở Project/ hợp lý hơn.
 AI đọc khi: gặp vấn đề cần tra cứu CASE hoặc PATTERN.
 Điều hướng qua: Project/CASES/CASE_INDEX.md
+
+## Quy tắc Git — bắt buộc
+
+### Thứ tự làm việc chuẩn
+1. Mở máy lên → git pull TRƯỚC
+2. Làm việc
+3. git push NGAY sau khi xong
+4. Chuyển sang máy khác → git pull TRƯỚC khi làm
+
+### Không bao giờ
+- Làm việc trên máy chưa pull
+- Để "ahead by N commits" qua đêm
+- Push từ 2 máy cùng lúc mà không pull trước
+
+### Sau git pull --rebase
+Luôn push ngay — không được quên:
+```bash
+git pull --rebase
+git push
+```
+
+### Nếu thấy "ahead by N commits"
+→ git push ngay, không làm việc tiếp.
