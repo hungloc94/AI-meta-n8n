@@ -2,8 +2,11 @@
 
 | Task | Tên | Trạng thái | Đường dẫn |
 |------|-----|------------|-----------|
-| Task 01 | Phase 9 — Caddy | ⏳ Chưa bắt đầu | Task_01_Caddy/ |
-| Task 02 | Phase 10 — Cloudflare Tunnel | ⏳ Chưa bắt đầu | Task_02_Cloudflare_Tunnel/ |
-| Task 03 | Cài n8n Docker trên server | ⏳ Chưa bắt đầu | Task_03_Install_n8n_Docker/ |
-| Task 04 | Import workflow từ backup | ⏳ Chưa bắt đầu | Task_04_Import_Workflow/ |
-| Task 05 | Verify toàn bộ workflow | ⏳ Chưa bắt đầu | Task_05_Verify_Workflow/ |
+| Task 01 | Audit Windows n8n | ⏳ Chưa bắt đầu | Task_01_Audit_Windows_n8n/ |
+| Task 02 | Backup Windows n8n | ⏳ Chưa bắt đầu | Task_02_Backup_Windows_n8n/ |
+| Task 03 | Audit Home Server | ⏳ Chưa bắt đầu | Task_03_Audit_Home_Server/ |
+| Task 04 | Design Docker Compose | ⏳ Chưa bắt đầu | Task_04_Design_Docker_Compose/ |
+| Task 05 | Deploy n8n + Cloudflare | ⏳ Chưa bắt đầu | Task_05_Deploy_n8n_Cloudflare/ |
+| Task 06 | Restore Data | ⏳ Chưa bắt đầu | Task_06_Restore_Data/ |
+| Task 07 | Functional Testing | ⏳ Chưa bắt đầu | Task_07_Functional_Testing/ |
+| Task 08 | Switch Production | ⏳ Chưa bắt đầu | Task_08_Switch_Production/ |
