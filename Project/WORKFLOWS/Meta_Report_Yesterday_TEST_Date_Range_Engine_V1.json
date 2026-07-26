@@ -1,5 +1,10 @@
 {
+  "createdAt": "2026-07-25T13:38:59.418Z",
+  "updatedAt": "2026-07-26T10:01:58.291Z",
+  "id": "EXLgZOPrMl8hK8TT",
   "name": "Meta Report Yesterday Scheduled 1 TEST - Date Range Engine V1",
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -23,7 +28,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const values = $('Đọc Google Sheet').first().json.values || [];\n\nfunction isHeaderRow(row) {\n  const first = String(row?.[0] ?? '').trim().toLowerCase();\n  return first === 'ma_quang_cao' || first === 'mÃ£ quáº£ng cÃ¡o';\n}\n\nfunction toNumber(value) {\n  const raw = String(value ?? '').trim();\n  if (!raw || raw === '#VALUE!' || raw === '#REF!') return 0;\n  const normalized = raw.replace(/\\./g, '').replace(',', '.');\n  const n = Number(normalized);\n  return Number.isFinite(n) ? n : 0;\n}\n\nif (values.length === 0) {\n  return [{ json: { records: [], rowCount: 0, headers: [], headerMap: {} } }];\n}\n\nconst headerRow = values[0];\nconst headerMap = {};\nheaderRow.forEach((h, i) => {\n  const name = String(h).trim();\n  if (name) headerMap[name] = i;  // bá» header rá»—ng\n});\n\n// === Kiá»ƒm tra header báº¯t buá»™c (chia 2 nhÃ³m theo DATA_SCHEMA_RULES) ===\nconst requiredBusinessHeaders = [\n  \"Ma_quang_cao\", \"Ngay\", \"Chi_tieu\", \"Mess_Comment\",\n  \"Khach_hop_le\", \"SDT\", \"Khach_chot\", \"Doanh_thu\"\n];\nconst requiredRawHeaders = [\n  \"Luot_hien_thi\", \"Click_All\"\n];\nconst requiredHeaders = [...requiredBusinessHeaders, ...requiredRawHeaders];\n\nfor (const h of requiredHeaders) {\n  if (headerMap[h] === undefined) {\n    throw new Error(`Thiáº¿u cá»™t báº¯t buá»™c trong Sheet: ${h}`);\n  }\n}\n\n// === Helper Ä‘á»c an toÃ n theo tÃªn cá»™t ===\nconst col = (row, name) => {\n  if (headerMap[name] === undefined) return '';\n  return row?.[headerMap[name]] ?? '';\n};\nconst colNum = (row, name) => {\n  if (headerMap[name] === undefined) return 0;\n  return toNumber(row[headerMap[name]]);\n};\n\nconst dataRows = values.filter((row, index) =>\n  !(index === 0 && isHeaderRow(row))\n);\n\nconst records = dataRows.map((row) => ({\n  // === Business Metrics ===\n  ma_quang_cao:              col(row, 'Ma_quang_cao'),\n  ngay:                      col(row, 'Ngay'),\n  chien_dich:                col(row, 'Chien_dich'),\n  ten_quang_cao:             col(row, 'Ten_quang_cao'),\n  chi_tieu:                  colNum(row, 'Chi_tieu'),\n  nguoi_tiep_can:            colNum(row, 'Nguoi_tiep_can'),\n  ngan_sach:                 colNum(row, 'Ngan_sach'),\n  click:                     colNum(row, 'click'),\n  mess_comment:              colNum(row, 'Mess_Comment'),\n  khach_sai_tep:             colNum(row, 'Khach_sai_tep'),\n  khach_hop_le:              colNum(row, 'Khach_hop_le'),\n  sdt:                       colNum(row, 'SDT'),\n  khach_chot:                colNum(row, 'Khach_chot'),\n  chi_phi_tren_khach_hop_le: colNum(row, 'Chi_phi_tren_khach_hop_le'),\n  chi_phi_khach_tren_sdt:    colNum(row, 'Chi_phi_khach_tren_SDT'),\n  doanh_thu:                 colNum(row, 'Doanh_thu'),\n  ghi_chu:                   col(row, 'ghi_chu'),\n  trang_thai:                col(row, 'Trang_Thai'),\n  key:                       col(row, 'Key'),\n  thoi_diem_cap_nhat:        col(row, 'Thoi_diem_cap_nhat'),\n  // === Raw Metrics ===\n  luot_hien_thi:  colNum(row, 'Luot_hien_thi'),\n  tan_suat:       colNum(row, 'Tan_suat'),\n  xem_3s:         colNum(row, 'Xem_3s'),\n  video_25:       colNum(row, 'Video_25'),\n  video_50:       colNum(row, 'Video_50'),\n  video_75:       colNum(row, 'Video_75'),\n  video_95:       colNum(row, 'Video_95'),\n  thruplay:       colNum(row, 'ThruPlay'),\n  click_ra_web:   colNum(row, 'Click_Ra_Web'),\n  click_all:      colNum(row, 'Click_All'),\n  // === Derived Metrics (debug only â€” khÃ´ng dÃ¹ng tÃ­nh KPI) ===\n  ctr_link_sheet: colNum(row, 'CTR_Link'),\n  ctr_all_sheet:  colNum(row, 'CTR_All'),\n  cpm_sheet:      colNum(row, 'CPM'),\n}));\n\nreturn [{ json: {\n  headers: headerRow,\n  headerMap,\n  records,\n  rowCount: records.length\n} }];"
+        "jsCode": "const values = $('Đọc Google Sheet').first().json.values || [];\n\nfunction isHeaderRow(row) {\n  const first = String(row?.[0] ?? '').trim().toLowerCase();\n  return first === 'ma_quang_cao' || first === 'mã quảng cáo';\n}\n\nfunction toNumber(value) {\n  const raw = String(value ?? '').trim();\n  if (!raw || raw === '#VALUE!' || raw === '#REF!') return 0;\n  const normalized = raw.replace(/\\./g, '').replace(',', '.');\n  const n = Number(normalized);\n  return Number.isFinite(n) ? n : 0;\n}\n\nif (values.length === 0) {\n  return [{ json: { records: [], rowCount: 0, headers: [], headerMap: {} } }];\n}\n\nconst headerRow = values[0];\nconst headerMap = {};\nheaderRow.forEach((h, i) => {\n  const name = String(h).trim();\n  if (name) headerMap[name] = i;  // bá» header rá»—ng\n});\n\n// === Kiểm tra header bắt buộc (chia 2 nhóm theo DATA_SCHEMA_RULES) ===\nconst requiredBusinessHeaders = [\n  \"Ma_quang_cao\", \"Ngay\", \"Chi_tieu\", \"Mess_Comment\",\n  \"Khach_hop_le\", \"SDT\", \"Khach_chot\", \"Doanh_thu\"\n];\nconst requiredRawHeaders = [\n  \"Luot_hien_thi\", \"Click_All\"\n];\nconst requiredHeaders = [...requiredBusinessHeaders, ...requiredRawHeaders];\n\nfor (const h of requiredHeaders) {\n  if (headerMap[h] === undefined) {\n    throw new Error(`Thiáº¿u cá»™t báº¯t buá»™c trong Sheet: ${h}`);\n  }\n}\n\n// === Helper đọc an toàn theo tên cột ===\nconst col = (row, name) => {\n  if (headerMap[name] === undefined) return '';\n  return row?.[headerMap[name]] ?? '';\n};\nconst colNum = (row, name) => {\n  if (headerMap[name] === undefined) return 0;\n  return toNumber(row[headerMap[name]]);\n};\n\nconst dataRows = values.filter((row, index) =>\n  !(index === 0 && isHeaderRow(row))\n);\n\nconst records = dataRows.map((row) => ({\n  // === Business Metrics ===\n  ma_quang_cao:              col(row, 'Ma_quang_cao'),\n  ngay:                      col(row, 'Ngay'),\n  chien_dich:                col(row, 'Chien_dich'),\n  ten_quang_cao:             col(row, 'Ten_quang_cao'),\n  chi_tieu:                  colNum(row, 'Chi_tieu'),\n  nguoi_tiep_can:            colNum(row, 'Nguoi_tiep_can'),\n  ngan_sach:                 colNum(row, 'Ngan_sach'),\n  click:                     colNum(row, 'click'),\n  mess_comment:              colNum(row, 'Mess_Comment'),\n  khach_sai_tep:             colNum(row, 'Khach_sai_tep'),\n  khach_hop_le:              colNum(row, 'Khach_hop_le'),\n  sdt:                       colNum(row, 'SDT'),\n  khach_chot:                colNum(row, 'Khach_chot'),\n  chi_phi_tren_khach_hop_le: colNum(row, 'Chi_phi_tren_khach_hop_le'),\n  chi_phi_khach_tren_sdt:    colNum(row, 'Chi_phi_khach_tren_SDT'),\n  doanh_thu:                 colNum(row, 'Doanh_thu'),\n  ghi_chu:                   col(row, 'ghi_chu'),\n  trang_thai:                col(row, 'Trang_Thai'),\n  key:                       col(row, 'Key'),\n  thoi_diem_cap_nhat:        col(row, 'Thoi_diem_cap_nhat'),\n  // === Raw Metrics ===\n  luot_hien_thi:  colNum(row, 'Luot_hien_thi'),\n  tan_suat:       colNum(row, 'Tan_suat'),\n  xem_3s:         colNum(row, 'Xem_3s'),\n  video_25:       colNum(row, 'Video_25'),\n  video_50:       colNum(row, 'Video_50'),\n  video_75:       colNum(row, 'Video_75'),\n  video_95:       colNum(row, 'Video_95'),\n  thruplay:       colNum(row, 'ThruPlay'),\n  click_ra_web:   colNum(row, 'Click_Ra_Web'),\n  click_all:      colNum(row, 'Click_All'),\n  // === Derived Metrics (debug only — không dùng tính KPI) ===\n  ctr_link_sheet: colNum(row, 'CTR_Link'),\n  ctr_all_sheet:  colNum(row, 'CTR_All'),\n  cpm_sheet:      colNum(row, 'CPM'),\n}));\n\nreturn [{ json: {\n  headers: headerRow,\n  headerMap,\n  records,\n  rowCount: records.length\n} }];"
       },
       "id": "7181dc18-0755-4ba0-bf2e-8c4628af195f",
       "name": "Normalize Sheet Data",
@@ -101,14 +106,14 @@
           "name": "Google Sheets account"
         },
         "googleApi": {
-          "id": "r8IIX4HdcHJilTxv",
-          "name": "Google Sheets Service Account"
+          "id": "kGB4h5UyGGcK5ibl",
+          "name": "Google Service Account account"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// TÃ­nh ngÃ y hÃ´m qua theo mÃºi giá» Asia/Ho_Chi_Minh\nconst vnNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));\nconst yesterday = new Date(vnNow);\nyesterday.setDate(vnNow.getDate() - 1);\n\nconst yyyy = yesterday.getFullYear();\nconst mm = String(yesterday.getMonth() + 1).padStart(2, '0');\nconst dd = String(yesterday.getDate()).padStart(2, '0');\n\nreturn [{ json: { reportDate: `${yyyy}-${mm}-${dd}` } }];"
+        "jsCode": "// Tính ngày hôm qua theo múi giờ Asia/Ho_Chi_Minh\nconst vnNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));\nconst yesterday = new Date(vnNow);\nyesterday.setDate(vnNow.getDate() - 1);\n\nconst yyyy = yesterday.getFullYear();\nconst mm = String(yesterday.getMonth() + 1).padStart(2, '0');\nconst dd = String(yesterday.getDate()).padStart(2, '0');\n\nreturn [{ json: { reportDate: `${yyyy}-${mm}-${dd}` } }];"
       },
       "id": "4e798424-f56e-4617-9c9b-b0b6be452480",
       "name": "Tính Ngày Hôm Qua",
@@ -121,7 +126,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const records = $('Normalize Sheet Data').first().json.records || [];\nconst reportDate = $('Tính Ngày Hôm Qua').first().json.reportDate;\n\nfunction normalizeDate(value) {\n  const raw = String(value ?? '').trim();\n  const dmy = raw.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/);\n  if (dmy) {\n    const [, d, m, y] = dmy;\n    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;\n  }\n  return raw;\n}\n\nconst filtered = records.filter(r => normalizeDate(r.ngay) === reportDate);\n\nif (filtered.length === 0) {\n  return [{ json: {\n    reportDate,\n    hasData: false,\n    filteredCount: 0,\n    message: `ðŸ“Š *BÃO CÃO META ADS â€” HÃ”M QUA*\\nðŸ“… NgÃ y: ${reportDate}\\nâš ï¸ KhÃ´ng cÃ³ dá»¯ liá»‡u trong Sheet cho ngÃ y nÃ y.\\nðŸ’¡ Kiá»ƒm tra láº¡i Meta Ads Daily Sheet Update.`\n  }}];\n}\n\n// === Aggregate Raw Metrics ===\nconst totals = {\n  spend:       0,\n  luotHienThi: 0,\n  click:       0,\n  clickAll:    0,\n  mess:        0,\n  khachHopLe:  0,\n  sdt:         0,\n  khachChot:   0,\n  doanhThu:    0,\n};\n\nfor (const r of filtered) {\n  totals.spend       += r.chi_tieu;\n  totals.luotHienThi += r.luot_hien_thi;\n  totals.click       += r.click;\n  totals.clickAll    += r.click_all;\n  totals.mess        += r.mess_comment;\n  totals.khachHopLe  += r.khach_hop_le;\n  totals.sdt         += r.sdt;\n  totals.khachChot   += r.khach_chot;\n  totals.doanhThu    += r.doanh_thu;\n}\n\n// === TÃ­nh KPI tá»« Raw Metrics ===\nconst kpis = {\n  cpm:         totals.luotHienThi > 0\n    ? Math.round(totals.spend / totals.luotHienThi * 1000) : null,\n  ctrLink:     totals.luotHienThi > 0\n    ? parseFloat((totals.click / totals.luotHienThi * 100).toFixed(2)) : null,\n  ctrAll:      totals.luotHienThi > 0\n    ? parseFloat((totals.clickAll / totals.luotHienThi * 100).toFixed(2)) : null,\n  cpc:         totals.click > 0\n    ? Math.round(totals.spend / totals.click) : null,\n  costPerMess: totals.mess > 0\n    ? Math.round(totals.spend / totals.mess) : null,\n  cpl:         totals.khachHopLe > 0\n    ? Math.round(totals.spend / totals.khachHopLe) : null,\n  dtPerSDT:    totals.sdt > 0\n    ? Math.round(totals.doanhThu / totals.sdt) : null,\n};\n\n// === Format Telegram ===\nconst fmt = (n) => Math.round(n).toLocaleString('vi-VN');\nconst fmtMoney = (n) => n === null ? 'N/A' : fmt(n) + 'Ä‘';\n\nconst message = [\n  `ðŸ“Š *BÃO CÃO META ADS â€” HÃ”M QUA*`,\n  `ðŸ“… NgÃ y: ${reportDate}`,\n  ``,\n  `ðŸ’° Chi tiÃªu: *${fmt(totals.spend)}Ä‘*`,\n  `ðŸ“© Mess: *${totals.mess}*`,\n  `ðŸ’µ Cost/Mess: *${fmtMoney(kpis.costPerMess)}*`,\n  ``,\n  `ðŸ‘¤ Lead: *${totals.khachHopLe}*`,\n  `ðŸ’µ CPL: *${fmtMoney(kpis.cpl)}*`,\n  ``,\n  `ðŸ“ˆ CPM: *${fmtMoney(kpis.cpm)}*`,\n  `ðŸ“ˆ CTR: *${kpis.ctrLink !== null ? kpis.ctrLink.toFixed(2) + '%' : 'N/A'}*`,\n  `ðŸ“ˆ CPC: *${fmtMoney(kpis.cpc)}*`,\n  ``,\n  `ðŸ† KhÃ¡ch chá»‘t: *${totals.khachChot}*`,\n  `ðŸ’° DT/SDT: *${fmtMoney(kpis.dtPerSDT)}*`,\n].join('\\n');\n\nreturn [{ json: {\n  reportDate,\n  hasData: true,\n  filteredCount: filtered.length,\n  totals,\n  kpis,\n  message\n} }];"
+        "jsCode": "const records = $('Normalize Sheet Data').first().json.records || [];\nconst reportDate = $('Tính Ngày Hôm Qua').first().json.reportDate;\n\nfunction normalizeDate(value) {\n  const raw = String(value ?? '').trim();\n  const dmy = raw.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/);\n  if (dmy) {\n    const [, d, m, y] = dmy;\n    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;\n  }\n  return raw;\n}\n\nconst filtered = records.filter(r => normalizeDate(r.ngay) === reportDate);\n\nif (filtered.length === 0) {\n  return [{ json: {\n    reportDate,\n    hasData: false,\n    filteredCount: 0,\n    message: `ðŸ“Š *BÃO CÃO META ADS â€” HÃ”M QUA*\\nðŸ“… NgÃ y: ${reportDate}\\nâš ï¸ KhÃ´ng cÃ³ dá»¯ liá»‡u trong Sheet cho ngÃ y nÃ y.\\nðŸ’¡ Kiá»ƒm tra láº¡i Meta Ads Daily Sheet Update.`\n  }}];\n}\n\n// === Aggregate Raw Metrics ===\nconst totals = {\n  spend:       0,\n  luotHienThi: 0,\n  click:       0,\n  clickAll:    0,\n  mess:        0,\n  khachHopLe:  0,\n  sdt:         0,\n  khachChot:   0,\n  doanhThu:    0,\n};\n\nfor (const r of filtered) {\n  totals.spend       += r.chi_tieu;\n  totals.luotHienThi += r.luot_hien_thi;\n  totals.click       += r.click;\n  totals.clickAll    += r.click_all;\n  totals.mess        += r.mess_comment;\n  totals.khachHopLe  += r.khach_hop_le;\n  totals.sdt         += r.sdt;\n  totals.khachChot   += r.khach_chot;\n  totals.doanhThu    += r.doanh_thu;\n}\n\n// === TÃ­nh KPI tá»« Raw Metrics ===\nconst kpis = {\n  cpm:         totals.luotHienThi > 0\n    ? Math.round(totals.spend / totals.luotHienThi * 1000) : null,\n  ctrLink:     totals.luotHienThi > 0\n    ? parseFloat((totals.click / totals.luotHienThi * 100).toFixed(2)) : null,\n  ctrAll:      totals.luotHienThi > 0\n    ? parseFloat((totals.clickAll / totals.luotHienThi * 100).toFixed(2)) : null,\n  cpc:         totals.click > 0\n    ? Math.round(totals.spend / totals.click) : null,\n  costPerMess: totals.mess > 0\n    ? Math.round(totals.spend / totals.mess) : null,\n  cpl:         totals.khachHopLe > 0\n    ? Math.round(totals.spend / totals.khachHopLe) : null,\n  dtPerSDT:    totals.sdt > 0\n    ? Math.round(totals.doanhThu / totals.sdt) : null,\n};\n\n// === Format Telegram ===\nconst fmt = (n) => Math.round(n).toLocaleString('vi-VN');\nconst fmtMoney = (n) => n === null ? 'N/A' : fmt(n) + 'Ä‘';\n\nconst message = [\n  `📊 *BÁO CÁO META ADS — HÔM QUA*`,\n  `📅 Ngày: ${reportDate}`,\n  ``,\n  `💰 Chi tiêu: *${fmt(totals.spend)}đ*`,\n  `📩 Mess: *${totals.mess}*`,\n  `💵 Cost/Mess: *${fmtMoney(kpis.costPerMess)}*`,\n  ``,\n  `👤 Lead: *${totals.khachHopLe}*`,\n  `💵 CPL: *${fmtMoney(kpis.cpl)}*`,\n  ``,\n  `📈 CPM: *${fmtMoney(kpis.cpm)}*`,\n  `📈 CTR: *${kpis.ctrLink !== null ? kpis.ctrLink.toFixed(2) + '%' : 'N/A'}*`,\n  `📈 CPC: *${fmtMoney(kpis.cpc)}*`,\n  ``,\n  `🏆 Khách chốt: *${totals.khachChot}*`,\n  `💰 DT/SDT: *${fmtMoney(kpis.dtPerSDT)}*`,\n].join('\\n');\n\nreturn [{ json: {\n  reportDate,\n  hasData: true,\n  filteredCount: filtered.length,\n  totals,\n  kpis,\n  message\n} }];"
       },
       "id": "4a562230-114d-405f-bf78-3b39babf4ec6",
       "name": "Lọc & Tính KPI Hôm Qua",
@@ -133,7 +138,6 @@
       ]
     }
   ],
-  "pinData": {},
   "connections": {
     "Schedule 08:13": {
       "main": [
@@ -207,15 +211,70 @@
       ]
     }
   },
-  "active": false,
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
+    "executionOrder": "v1"
   },
-  "versionId": "e40980a7-e059-4621-a13f-772e595ca40e",
+  "staticData": null,
   "meta": {
     "instanceId": "3bfb4edb16a067933e9fcee4a4583c3ddd474de6aac2d762abdef6853e9e098e"
   },
-  "id": "5qUr7kQvlVEKw8OQ",
+  "pinData": {},
+  "versionId": "62228139-39bc-4440-a8a4-de7ca7dc6227",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2026-07-25T13:38:59.419Z",
+      "updatedAt": "2026-07-25T13:38:59.419Z",
+      "role": "workflow:owner",
+      "workflowId": "EXLgZOPrMl8hK8TT",
+      "projectId": "2aDERxQbQRzE5TfX",
+      "project": {
+        "createdAt": "2026-07-25T13:20:04.995Z",
+        "updatedAt": "2026-07-25T13:29:28.313Z",
+        "id": "2aDERxQbQRzE5TfX",
+        "name": "Lộc Hưng <buivu201294@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "createdAt": "2026-07-25T13:20:04.995Z",
+            "updatedAt": "2026-07-25T13:20:04.995Z",
+            "role": "project:personalOwner",
+            "userId": "b8e3a3a0-815c-48a4-a558-c551e434f4b1",
+            "projectId": "2aDERxQbQRzE5TfX",
+            "user": {
+              "createdAt": "2026-07-25T13:20:04.340Z",
+              "updatedAt": "2026-07-26T04:00:01.000Z",
+              "id": "b8e3a3a0-815c-48a4-a558-c551e434f4b1",
+              "email": "buivu201294@gmail.com",
+              "firstName": "Lộc",
+              "lastName": "Hưng",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-07-25T13:32:18.540Z",
+                "personalization_survey_n8n_version": "1.103.2",
+                "companySize": "<20",
+                "companyType": "digital-agency",
+                "automationGoalSm": [
+                  "reporting"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "other"
+              },
+              "settings": {
+                "userActivated": false
+              },
+              "role": "global:owner",
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-26",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
   "tags": []
 }
