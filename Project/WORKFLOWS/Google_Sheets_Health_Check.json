@@ -1,5 +1,10 @@
 {
+  "createdAt": "2026-07-25T13:38:59.380Z",
+  "updatedAt": "2026-07-26T12:27:55.121Z",
+  "id": "EWvw3tX4oV11xXbs",
   "name": "Google Sheets Health Check 07:00",
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -42,8 +47,8 @@
           "name": "Google Sheets account"
         },
         "googleApi": {
-          "id": "r8IIX4HdcHJilTxv",
-          "name": "Google Sheets Service Account"
+          "id": "kGB4h5UyGGcK5ibl",
+          "name": "Google Service Account account"
         }
       },
       "onError": "continueErrorOutput"
@@ -91,7 +96,6 @@
       ]
     }
   ],
-  "pinData": {},
   "connections": {
     "Schedule 07:00": {
       "main": [
@@ -134,15 +138,70 @@
       ]
     }
   },
-  "active": true,
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
+    "executionOrder": "v1"
   },
-  "versionId": "94f9a5a4-cf72-43a4-b862-596df3d2d55b",
+  "staticData": null,
   "meta": {
     "instanceId": "3bfb4edb16a067933e9fcee4a4583c3ddd474de6aac2d762abdef6853e9e098e"
   },
-  "id": "HeDb2BsAbJivz6mX",
+  "pinData": {},
+  "versionId": "302db9f6-507f-4a57-ac01-3da28ef98163",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2026-07-25T13:38:59.384Z",
+      "updatedAt": "2026-07-25T13:38:59.384Z",
+      "role": "workflow:owner",
+      "workflowId": "EWvw3tX4oV11xXbs",
+      "projectId": "2aDERxQbQRzE5TfX",
+      "project": {
+        "createdAt": "2026-07-25T13:20:04.995Z",
+        "updatedAt": "2026-07-25T13:29:28.313Z",
+        "id": "2aDERxQbQRzE5TfX",
+        "name": "Lộc Hưng <buivu201294@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "createdAt": "2026-07-25T13:20:04.995Z",
+            "updatedAt": "2026-07-25T13:20:04.995Z",
+            "role": "project:personalOwner",
+            "userId": "b8e3a3a0-815c-48a4-a558-c551e434f4b1",
+            "projectId": "2aDERxQbQRzE5TfX",
+            "user": {
+              "createdAt": "2026-07-25T13:20:04.340Z",
+              "updatedAt": "2026-07-26T04:00:01.000Z",
+              "id": "b8e3a3a0-815c-48a4-a558-c551e434f4b1",
+              "email": "buivu201294@gmail.com",
+              "firstName": "Lộc",
+              "lastName": "Hưng",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-07-25T13:32:18.540Z",
+                "personalization_survey_n8n_version": "1.103.2",
+                "companySize": "<20",
+                "companyType": "digital-agency",
+                "automationGoalSm": [
+                  "reporting"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "other"
+              },
+              "settings": {
+                "userActivated": false
+              },
+              "role": "global:owner",
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-26",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
   "tags": []
 }

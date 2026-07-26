@@ -1,11 +1,22 @@
 {
   "createdAt": "2026-07-25T13:38:59.418Z",
-  "updatedAt": "2026-07-26T10:01:58.291Z",
+  "updatedAt": "2026-07-26T10:32:10.503Z",
   "id": "EXLgZOPrMl8hK8TT",
   "name": "Meta Report Yesterday Scheduled 1 TEST - Date Range Engine V1",
   "active": false,
   "isArchived": false,
   "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-temp",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
     {
       "parameters": {
         "rule": {
@@ -101,10 +112,6 @@
         96
       ],
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "iGuF5SVznNPI7ihl",
-          "name": "Google Sheets account"
-        },
         "googleApi": {
           "id": "kGB4h5UyGGcK5ibl",
           "name": "Google Service Account account"
@@ -209,6 +216,17 @@
           }
         ]
       ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Tính Ngày Hôm Qua",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -219,7 +237,7 @@
     "instanceId": "3bfb4edb16a067933e9fcee4a4583c3ddd474de6aac2d762abdef6853e9e098e"
   },
   "pinData": {},
-  "versionId": "62228139-39bc-4440-a8a4-de7ca7dc6227",
+  "versionId": "705d65cf-5509-4971-b415-aa64185c279b",
   "triggerCount": 0,
   "shared": [
     {
