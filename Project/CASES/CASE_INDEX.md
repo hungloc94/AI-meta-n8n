@@ -60,4 +60,4 @@
 | CASE | File | Mô tả |
 |------|------|-------|
 | 039 | CASE-039_Scheduled_Health_Check_Truoc_Workflow_Phu_Thuoc.md | Health check phải chạy trước workflow phụ thuộc |
-| 040 | CASE-040_Workflow_Artifact_Active_Khong_Bang_Runtime_Active.md | Artifact active khác runtime active |
+| 040 | CASE-040_Workflow_Artifact_Active_Khong_Bang_Runtime_Active.md | Artifact active khác runtime active || 043 | CASE-043_Google_Service_Account_Scope_Required.md | Google SA scope bắt buộc khai báo |
