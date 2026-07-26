@@ -55,7 +55,7 @@
 | 037 | CASE-037_Schema_Change_Verify_Toan_Bo.md | Thêm/đổi cột Sheet → verify toàn bộ chuỗi đọc dữ liệu |
 | 038 | CASE-038_Business_Zero_vs_Pipeline_Failure.md | KPI = 0 có thể là business reality, không phải pipeline hỏng |
 
-## Patterns (CASE-039 → CASE-044)
+## Patterns (CASE-039 → CASE-046)
 
 | CASE | File | Mô tả |
 |------|------|-------|
@@ -65,3 +65,5 @@
 | 042 | CASE-042_Health_Check_Fail_Path_Alert_StopAndError.md | Health check fail phải stopAndError — không để fail im lặng |
 | 043 | CASE-043_Google_Service_Account_Scope_Required.md | Google SA scope bắt buộc khai báo |
 | 044 | CASE-044_Mojibake_Node_Code_Sau_Import_Windows_Ubuntu.md | Mojibake node Code sau import workflow Windows → Ubuntu |
+| 045 | CASE-045_Credential_Unavailable_Fix_Via_API.md | Credential unavailable sau import — fix qua API |
+| 046 | CASE-046_AI_Must_Confirm_Workflow_Name_Before_Fix.md | AI phải confirm tên workflow trước khi fix |
