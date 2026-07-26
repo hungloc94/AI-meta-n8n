@@ -14,6 +14,8 @@ Mỗi khi mở terminal mới hoặc bắt đầu dự án mới, Human chỉ c�
 
 ### Bước 1 — Đọc quy chuẩn chung
 Đọc `AI_OS/README.md` trong thư mục hiện tại.
+Đọc thêm `AI_OS/skills/dev-workflow/ak-dev-workflow-skills/README.md` để biết các skill có sẵn.
+Khi làm việc — tự đọc skill phù hợp theo từng bước, không đọc hết ngay.
 
 ---
 

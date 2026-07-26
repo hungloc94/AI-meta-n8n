@@ -796,6 +796,22 @@ Nếu STATUS.md không ghi rõ đang ở bước nào → AI hỏi Human ngay, k
 Nếu AI không gọi "anh Lộc" → anh Lộc biết ngay AI đó chưa đọc đủ tài liệu → yêu cầu AI đọc lại `AI_OS/README.md` trước khi tiếp tục.
 
 Đây là dấu hiệu kiểm tra đơn giản nhất để phát hiện AI bị miss context.
+---
+
+## Skill Mapping — AI Agent dùng skill nào
+
+Mỗi Agent tự đọc skill phù hợp khi bắt đầu bước tương ứng:
+
+| Bước | Agent | Skill cần đọc |
+|------|-------|---------------|
+| Brainstorm | Claude | `AI_OS/skills/dev-workflow/ak-dev-workflow-skills/ak-brainstorm/SKILL.md` |
+| Plan | Claude | `AI_OS/skills/dev-workflow/ak-dev-workflow-skills/ak-plan/SKILL.md` |
+| Cook | Grok / Codex | `AI_OS/skills/dev-workflow/ak-dev-workflow-skills/ak-cook/SKILL.md` |
+| Review | Claude Code | `AI_OS/skills/dev-workflow/ak-dev-workflow-skills/ak-test/SKILL.md` + `ak-code-review/SKILL.md` |
+| Fix | Grok / Codex | `AI_OS/skills/dev-workflow/ak-dev-workflow-skills/ak-fix/SKILL.md` |
+
+> Agent tự đọc đúng skill đúng lúc — không đọc hết ngay từ đầu.
+
 # 4. Documentation Workflow
 
 ## Mục tiêu
