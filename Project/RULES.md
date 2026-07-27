@@ -76,25 +76,25 @@ Human ra lệnh push = Human đã chấp nhận thay đổi.
 
 ### Thứ tự làm việc chuẩn
 1. Mở máy lên → git pull TRƯỚC.
-2. Làm việc — AI có thể `git add` + `git commit` thay Human, nhưng dừng lại ở đó.
-3. Human `git push` ngay sau khi AI báo đã commit xong.
+2. Làm việc — AI `git add` + `git commit`, báo cáo đầy đủ (làm gì, sửa gì, tại sao, kết quả) — rồi chờ lệnh Human.
+3. Human ra lệnh push → AI push ngay, không hỏi thêm.
 4. Chuyển sang máy khác → git pull TRƯỚC khi làm.
 
 ### Không bao giờ
 - Làm việc trên máy chưa pull.
-- Để "ahead by N commits" qua đêm (AI commit xong phải báo Human push ngay, không để tồn đọng).
+- Để "ahead by N commits" qua đêm — AI commit xong phải báo cáo và chờ lệnh Human ngay, không để tồn đọng qua đêm.
 - Push từ 2 máy cùng lúc mà không pull trước.
 
 ### Sau git pull --rebase
-Không được quên bước push (do Human thực hiện) ngay sau khi AI commit:
+Không được để tồn đọng — AI báo cáo và chờ lệnh push ngay sau khi commit:
 ```bash
 git pull --rebase
-# AI: git add, git commit — rồi báo Human
-# Human: git push
+# AI: git add, git commit → báo cáo đầy đủ, chờ lệnh Human
+# Human ra lệnh push → AI: git push
 ```
 
 ### Nếu thấy "ahead by N commits"
-→ AI báo Human push ngay, không tự push, không làm việc tiếp cho đến khi đã push.
+→ AI báo cáo ngay và chờ lệnh Human push, không tự ý push, không làm việc tiếp cho đến khi có lệnh.
 
 ---
 

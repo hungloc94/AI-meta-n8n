@@ -100,4 +100,11 @@ STALE_DOCS:
 ### Signal (tiếp)
 OPEN_TASKS:
 - [x] Sửa Quy tắc A lần 3 theo đúng nội dung Human cung cấp — đã ghi vào RULES.md
-- [ ] Chờ Human ra lệnh push commit này
+- [x] Human ra lệnh push (commit `c7ac623`) — AI đã push
+- [x] Human yêu cầu đồng bộ section 3 (đoạn "Không bao giờ", "Sau git pull --rebase", "Nếu thấy ahead by N commits") theo Quy tắc A mới — đã sửa: đổi "Human push" → "Human ra lệnh, AI push", giữ nguyên tinh thần không để ahead-by-N-commits qua đêm
+
+### Nhật ký (tiếp — đồng bộ section 3, 2026-07-27)
+- **Lỗi quy trình của AI:** quên backup RULES.md TRƯỚC khi sửa section 3 (vi phạm RULE 2 AI_OS) — sửa file trước, backup bù sau bằng cách lấy lại bản đã commit/push (`git show c7ac623:Project/RULES.md`) lưu vào `BACKUP/2026-07-27_08-35_before_RULES_section3_dongbo/`. May mắn không mất dữ liệu vì bản trước đó đã push lên Git, nhưng đây là sai quy trình cần tự nhắc không lặp lại.
+- Sửa 3 đoạn trong section 3 (Thứ tự làm việc chuẩn bước 2-3, Không bao giờ, Sau git pull --rebase, Nếu thấy ahead by N commits): thay mọi chỗ nói "Human tự push" bằng "AI báo cáo → chờ lệnh Human → Human ra lệnh thì AI push" — khớp đúng Quy tắc A hiện tại. Giữ nguyên nội dung "không để ahead by N commits qua đêm" theo đúng yêu cầu Human.
+- STALE_DOCS mục cũ (section 3 chưa đồng bộ) coi như đã xử lý xong.
+- Chỉ git add + commit lần này — KHÔNG push, chờ lệnh Human riêng.
