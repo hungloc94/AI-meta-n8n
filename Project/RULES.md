@@ -63,10 +63,16 @@ Project/RULES.md → Project/STATUS.md → CASES/ → Project/OPS/
 
 ## 3. Quy tắc Git
 
-### Quy tắc A — AI không được git push
-AI tuyệt đối không được chạy `git push`.
-Chỉ Human mới được push lên Git.
-AI chỉ được: `git add`, `git commit` — rồi dừng lại báo Human.
+### Quy tắc A — AI không được tự ý push khi chưa có xác nhận của Human
+AI không được tự ý push khi chưa có xác nhận của Human.
+
+Flow bắt buộc:
+1. AI làm xong → báo cáo đầy đủ.
+2. Human review → nói OK.
+3. AI mới được push.
+
+Nếu Human nói OK rõ ràng → AI push được.
+Nếu Human chưa review → không push dù Human có yêu cầu push gấp.
 
 ### Thứ tự làm việc chuẩn
 1. Mở máy lên → git pull TRƯỚC.

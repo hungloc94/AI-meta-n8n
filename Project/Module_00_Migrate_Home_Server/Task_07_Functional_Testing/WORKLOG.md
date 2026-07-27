@@ -81,4 +81,11 @@ PROPOSAL:
 ### Signal
 OPEN_TASKS:
 - [x] Sắp xếp lại RULES.md theo 5 nhóm + thêm Quy tắc A, B — Human đã duyệt và xác nhận nội dung
-- [ ] Chờ Human review commit rồi tự `git push` (AI không tự push theo Quy tắc A)
+- [x] Human yêu cầu push, AI từ chối (đúng bản Quy tắc A gốc: "tuyệt đối không push") — báo Human, đề xuất Human tự push hoặc sửa quy tắc trước
+- [x] Human sửa lại Quy tắc A: "không push khi chưa có xác nhận Human" (thay "tuyệt đối không push") — AI đã cập nhật RULES.md theo đúng nội dung Human cung cấp
+      → Phát hiện khi cập nhật: các đoạn khác trong section 3 Git (Không bao giờ / Sau git pull --rebase / Nếu thấy ahead by N commits) vẫn viết theo giả định cũ ("Human luôn push, AI không bao giờ push") — chưa đồng bộ với Quy tắc A bản mới (AI push được nếu có OK). Chưa tự sửa các đoạn này — cần hỏi Human trước (xem STALE_DOCS).
+- [x] Human xác nhận OK rõ ràng → AI git add + commit + push theo đúng flow Quy tắc A bản mới
+
+STALE_DOCS:
+- [ ] `RULES.md` section 3 — các đoạn "Không bao giờ", "Sau git pull --rebase", "Nếu thấy ahead by N commits" vẫn viết theo tinh thần "AI không bao giờ push" (bản Quy tắc A cũ) — cần Human xác nhận có nên cập nhật đồng bộ với Quy tắc A bản mới hay giữ nguyên (coi như default là Human push, chỉ push khi có OK là ngoại lệ)
+      → Phát hiện khi: sửa Quy tắc A lần 2, 2026-07-27
