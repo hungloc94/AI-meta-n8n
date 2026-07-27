@@ -1,0 +1,50 @@
+services:
+  n8n:
+    image: n8nio/n8n:1.103.2
+    container_name: n8n
+    restart: unless-stopped
+
+    # Local-only theo MIGRATION_RUNBOOK — public qua Caddy/Tunnel ở Task 05
+    ports:
+      - "127.0.0.1:5678:5678"
+
+    environment:
+      # Timezone (không secret — có thể hard-code an toàn)
+      - TZ=Asia/Ho_Chi_Minh
+      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+
+      # Secrets — CHỈ từ .env, không hard-code
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+
+      # Host / URL (điền trong .env; local default khi chưa có domain)
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - N8N_PORT=5678
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
+
+      # Runtime tokens (secrets / semi-secrets — chỉ từ .env)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - META_ACCESS_TOKEN=${META_ACCESS_TOKEN}
+
+    env_file:
+      - .env
+
+    volumes:
+      - /home/buivu/n8n-data:/home/node/.n8n
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:5678/healthz || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

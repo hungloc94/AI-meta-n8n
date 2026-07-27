@@ -1,0 +1,1302 @@
+{
+  "createdAt": "2026-07-25T13:38:59.392Z",
+  "updatedAt": "2026-07-26T12:27:55.226Z",
+  "id": "rz3Wya5lFay7ShVL",
+  "name": "Meta Ads Daily Sheet Update 7:30 2",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "2e226ad5-8632-4394-82ac-f128463b24d4",
+      "name": "Schedule 07:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1328,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/1EHpEws60xWjJUaBfd_qDFLoeikMYvhUc9f9fR-HcL_s/values/BÁO_CÁO_QUẢNG_CÁO",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "options": {}
+      },
+      "id": "859dd9f4-0a02-4650-aef3-22aab29b3b7e",
+      "name": "Đọc toàn bộ Sheet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1104,
+        96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iGuF5SVznNPI7ihl",
+          "name": "Google Sheets account"
+        },
+        "googleApi": {
+          "id": "kGB4h5UyGGcK5ibl",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v19.0/act_303484773737553/ads",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,effective_status,adset{daily_budget,lifetime_budget}"
+            },
+            {
+              "name": "limit",
+              "value": "1000"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bf2d19b2-1f46-4e23-8131-6dd17845af47",
+      "name": "Lấy cấu hình Meta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -880,
+        96
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HAOqERh15wR0pB4r",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const numDays = 07;\nconst endDate = new Date();\nconst startDate = new Date();\nstartDate.setDate(endDate.getDate() - numDays);\nconst dates = [];\n\nlet currentDate = new Date(startDate);\nwhile (currentDate <= endDate) {\n  const yyyy = currentDate.getFullYear();\n  const mm = String(currentDate.getMonth() + 1).padStart(2, '0');\n  const dd = String(currentDate.getDate()).padStart(2, '0');\n  dates.push({ json: { date: `${yyyy}-${mm}-${dd}` } });\n  currentDate.setDate(currentDate.getDate() + 1);\n}\n\nreturn dates;"
+      },
+      "id": "c27616d6-ca8c-4c13-a9d4-a65d441ea659",
+      "name": "Tạo mảng ngày",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let items = $input.all();\nconst isManual = $execution.mode === 'manual';\nif (isManual && items.length > 2) {\n  items = items.slice(0, 2);\n}\nconst staticData = $getWorkflowStaticData('global');\nconst now = Date.now();\nif (staticData.lastMetaCall && (now - staticData.lastMetaCall < 60000)) {\n  throw new Error('Cooldown: Lần gọi Meta API trước < 60 giây. Đã dừng workflow.');\n}\nstaticData.lastMetaCall = now;\nconst results = [];\nfor (const item of items) {\n  const date = item.json.date;\n  const timeRange = encodeURIComponent(JSON.stringify({since: date, until: date}));\nconst url = `https://graph.facebook.com/v19.0/act_303484773737553/insights?time_range=${timeRange}&level=ad&fields=ad_id,ad_name,campaign_id,campaign_name,account_id,spend,reach,clicks,inline_link_clicks,actions,date_start,impressions,frequency,video_view,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p95_watched_actions,video_thruplay_watched_actions,outbound_clicks`;\n  let success = false;\n  let attempts = 0;\n  let responseData = {};\n  while (!success && attempts < 3) {\n    attempts++;\n    try {\n      const token = $env.META_ACCESS_TOKEN;\n      if (!token) {\n        throw new Error('Missing META_ACCESS_TOKEN environment variable.');\n      }\n      const response = await this.helpers.httpRequest({\n        method: 'GET',\n        url: url,\n        json: true,\n        headers: {\n          Authorization: `Bearer ${token}`\n        }\n      });\n      responseData = response;\n      success = true;\n    } catch (error) {\n      const metaErrorBody = error.response?.data\n        ? JSON.stringify(error.response.data)\n        : '';\n      const errMsg = (error.message || '') + ' ' + metaErrorBody;\n      const isRateLimitError = errMsg.includes('Application request limit reached');\n      const networkErrorPatterns = [\n        'Client network socket disconnected',\n        'ECONNRESET',\n        'ETIMEDOUT',\n        'socket hang up'\n      ];\n      const isNetworkError = networkErrorPatterns.some(p =>\n        errMsg.toLowerCase().includes(p.toLowerCase())\n      );\n      if (isRateLimitError) {\n        if (attempts >= 3) {\n          throw new Error('Rate limit. Vẫn lỗi sau 3 lần retry. Meta error: ' + metaErrorBody);\n        }\n        const waitTime = Math.floor(Math.random() * (120000 - 60000 + 1)) + 60000;\n        await new Promise(resolve => setTimeout(resolve, waitTime));\n      } else if (isNetworkError) {\n        if (attempts >= 3) {\n          throw new Error('Lỗi mạng tạm thời. Vẫn lỗi sau 3 lần retry.');\n        }\n        await new Promise(resolve => setTimeout(resolve, attempts * 3000));\n      } else {\n        throw new Error(\n          'Meta API Error: ' + JSON.stringify(error.response?.data || error.message, null, 2)\n        );\n      }\n    }\n  }\n  results.push({ json: responseData });\n  await new Promise(resolve => setTimeout(resolve, 2000));\n}\nreturn results;"
+      },
+      "id": "1537644d-fc50-4273-a8e5-85a772519976",
+      "name": "Lấy dữ liệu Meta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const sheetData = $('Đọc toàn bộ Sheet').first().json.values || [];\nif (sheetData.length === 0) {\n  throw new Error(\"Sheet is completely empty! Please run Temp: Update Headers first.\");\n}\n\nconst headers = sheetData[0];\nconst headerMap = {};\nheaders.forEach((h, index) => {\n    headerMap[String(h).trim()] = index;\n});\n\nconst requiredHeaders = [\n  \"Ma_quang_cao\", \"Ngay\", \"Chien_dich\", \"Ten_quang_cao\", \"Chi_tieu\",\n  \"Nguoi_tiep_can\", \"Ngan_sach\", \"click\", \"Mess_Comment\",\n  \"Khach_sai_tep\", \"Khach_hop_le\", \"SDT\", \"Khach_chot\",\n  \"Chi_phi_tren_khach_hop_le\", \"Chi_phi_khach_tren_SDT\", \"Doanh_thu\",\n  \"ghi_chu\", \"Trang_Thai\", \"Key\", \"Thoi_diem_cap_nhat\",\n\n  \"Luot_hien_thi\",\n  \"Tan_suat\",\n  \"Xem_3s\",\n  \"Video_25\",\n  \"Video_50\",\n  \"Video_75\",\n  \"Video_95\",\n  \"ThruPlay\",\n  \"Click_Ra_Web\",\n  \"Click_All\"\n];\n\nfor(const h of requiredHeaders) {\n  if (headerMap[h] === undefined) {\n    throw new Error(`THIẾU CỘT BẮT BUỘC: [${h}]. Vui lòng bổ sung vào dòng 1 của Sheet và không được đổi tên.`);\n  }\n}\n\nconst existingMap = {};\nfor(let r=1; r < sheetData.length; r++) {\n  const rowArray = sheetData[r];\n  const key = rowArray[headerMap[\"Key\"]];\n  if(key) {\n    existingMap[key] = {\n      khachSaiTep: parseInt(rowArray[headerMap[\"Khach_sai_tep\"]] || '0', 10),\n      sdt: parseInt(rowArray[headerMap[\"SDT\"]] || '0', 10),\n      khachChot: parseInt(rowArray[headerMap[\"Khach_chot\"]] || '0', 10)\n    };\n  }\n}\n\nconst adsRaw = $('Lấy cấu hình Meta').first().json.data || [];\nconst adsMap = {};\nadsRaw.forEach(ad => { adsMap[ad.id] = ad; });\n\n// ===== KPI Helpers =====\n\nfunction getActionValue(actionsArray, actionType) {\n  if (!Array.isArray(actionsArray)) return 0;\n  const found = actionsArray.find(a => a.action_type === actionType);\n  return found ? (parseInt(found.value, 10) || 0) : 0;\n}\n\nfunction getVideoFieldValue(videoArray) {\n  if (!Array.isArray(videoArray) || videoArray.length === 0) return 0;\n  return parseInt(videoArray[0].value, 10) || 0;\n}\n\nfunction getOutboundClicks(outboundData) {\n  if (!Array.isArray(outboundData)) return 0;\n  const found = outboundData.find(x => x && x.value !== undefined);\n  return found ? (parseInt(found.value,10) || 0) : 0;\n}\n\nconst allItems = [];\n\n$input.all().forEach(insightItem => {\n  const insights = insightItem.json.data || [];\n  \n  insights.forEach(row => {\n    const adDetail = adsMap[row.ad_id] || {};\n    const adset = adDetail.adset || {};\n    const status = adDetail.effective_status === 'ACTIVE' ? 'Bật' : 'Tắt';\n    \n    let rawBudget = adset.daily_budget || adset.lifetime_budget || \"0\";\n    let budget = parseInt(String(rawBudget).replace(/\\./g, '').replace(/,/g, ''), 10);\n    if (isNaN(budget)) budget = 0;\n\n    let totalMess = 0;\n    if (row.actions) {\n      const messAction = row.actions.find(a => a.action_type === 'onsite_conversion.messaging_conversation_started_7d');\n      totalMess = messAction ? parseInt(messAction.value, 10) : 0;\n    }\n    \n    // Google Sheet:\n    // - click      -> Link Click (inline_link_clicks)\n    // - Click_All  -> Total Clicks (clicks)\n    const clickLink = parseInt(row.inline_link_clicks, 10) || 0;\n    const clickAll = parseInt(row.clicks, 10) || 0;\n\n    const spend = parseFloat(row.spend) || 0;\n    const reach = parseInt(row.reach, 10) || 0;\n    const impressions = parseInt(row.impressions, 10) || 0;\n    const frequency = parseFloat(row.frequency) || 0;\n\n    const xem3s = getActionValue(row.actions, \"video_view\");\n    const video25 = getVideoFieldValue(row.video_p25_watched_actions);\n    const video50 = getVideoFieldValue(row.video_p50_watched_actions);\n    const video75 = getVideoFieldValue(row.video_p75_watched_actions);\n    const video95 = getVideoFieldValue(row.video_p95_watched_actions);\n    const thruplay = getVideoFieldValue(row.video_thruplay_watched_actions);\n    const clickRaWeb = getOutboundClicks(row.outbound_clicks);\n\n    const key = `${row.date_start}_${row.ad_id}`;\n    \n    const manual = existingMap[key] || { khachSaiTep: 0, sdt: 0, khachChot: 0 };\n    \n    let validLeads = totalMess - manual.khachSaiTep;\n    if(validLeads < 0) validLeads = 0;\n\n    const vnTime = new Date(new Date().toLocaleString(\"en-US\", {timeZone: \"Asia/Ho_Chi_Minh\"}));\n    const dd = String(vnTime.getDate()).padStart(2, '0');\n    const mm = String(vnTime.getMonth() + 1).padStart(2, '0');\n    const yyyy = vnTime.getFullYear();\n    const HH = String(vnTime.getHours()).padStart(2, '0');\n    const min = String(vnTime.getMinutes()).padStart(2, '0');\n    const ss = String(vnTime.getSeconds()).padStart(2, '0');\n    const timestamp = `${dd}/${mm}/${yyyy} ${HH}:${min}:${ss}`;\n\n    if (existingMap[key]) {\n      allItems.push({\n        json: {\n          __actionType: \"update\",\n          \"Key\": key,\n          \"Chi_tieu\": spend,\n          \"Nguoi_tiep_can\": reach,\n          \"click\": clickLink,\n          \"Mess_Comment\": totalMess,\n          \"Thoi_diem_cap_nhat\": timestamp,\n          \"Luot_hien_thi\": impressions,\n          \"Tan_suat\": frequency,\n          \"Xem_3s\": xem3s,\n          \"Video_25\": video25,\n          \"Video_50\": video50,\n          \"Video_75\": video75,\n          \"Video_95\": video95,\n          \"ThruPlay\": thruplay,\n          \"Click_Ra_Web\": clickRaWeb,\n          \"Click_All\": clickAll\n        }\n      });\n    } else {\n      allItems.push({\n        json: {\n          __actionType: \"append\",\n          \"Ma_quang_cao\": row.ad_id,\n          \"Ngay\": row.date_start,\n          \"Chien_dich\": row.campaign_name,\n          \"Ten_quang_cao\": row.ad_name,\n          \"Chi_tieu\": spend,\n          \"Nguoi_tiep_can\": reach,\n          \"Ngan_sach\": budget,\n          \"click\": clickLink,\n          \"Mess_Comment\": totalMess,\n          \"Trang_Thai\": status,\n          \"Key\": key,\n          \"Thoi_diem_cap_nhat\": timestamp,\n          \"Luot_hien_thi\": impressions,\n          \"Tan_suat\": frequency,\n          \"Xem_3s\": xem3s,\n          \"Video_25\": video25,\n          \"Video_50\": video50,\n          \"Video_75\": video75,\n          \"Video_95\": video95,\n          \"ThruPlay\": thruplay,\n          \"Click_Ra_Web\": clickRaWeb,\n          \"Click_All\": clickAll\n        }\n      });\n    }\n  });\n});\n\nif (allItems.length === 0) return [{ json: { __actionType: 'skip', msg: 'No data' } }];\n\nreturn allItems;"
+      },
+      "id": "79ed04e9-f6ae-4887-b1d5-c8e9a87f90aa",
+      "name": "Xử lý dữ liệu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.__actionType }}",
+              "rightValue": "append",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "b6116c33-4d89-48d4-86fc-abb99de30b10",
+      "name": "IF: Append?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        16,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond2",
+              "leftValue": "={{ $json.__actionType }}",
+              "rightValue": "update",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "e10085f5-e5e2-4668-a7d6-e4cc091e314d",
+      "name": "IF: Update?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        16,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  delete item.json.__actionType;\n}\nreturn $input.all();"
+      },
+      "id": "59a2195b-d2f9-4fe9-bdac-bfdd9b3a7c2b",
+      "name": "Clean Append",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  delete item.json.__actionType;\n}\nreturn $input.all();"
+      },
+      "id": "fa164860-aaf4-4cfb-9890-0fc2f92585e1",
+      "name": "Clean Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1EHpEws60xWjJUaBfd_qDFLoeikMYvhUc9f9fR-HcL_s",
+          "mode": "list",
+          "cachedResultName": "ĐO LƯỜNG CONTENT HAPPYHOME",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EHpEws60xWjJUaBfd_qDFLoeikMYvhUc9f9fR-HcL_s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1598114539,
+          "mode": "list",
+          "cachedResultName": "BÁO_CÁO_QUẢNG_CÁO",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EHpEws60xWjJUaBfd_qDFLoeikMYvhUc9f9fR-HcL_s/edit#gid=1598114539"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Ma_quang_cao",
+              "displayName": "Ma_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ngay",
+              "displayName": "Ngay",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chien_dich",
+              "displayName": "Chien_dich",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ten_quang_cao",
+              "displayName": "Ten_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chi_tieu",
+              "displayName": "Chi_tieu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nguoi_tiep_can",
+              "displayName": "Nguoi_tiep_can",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ngan_sach",
+              "displayName": "Ngan_sach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "click",
+              "displayName": "click",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mess_Comment",
+              "displayName": "Mess_Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khach_sai_tep",
+              "displayName": "Khach_sai_tep",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khach_hop_le",
+              "displayName": "Khach_hop_le",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SDT",
+              "displayName": "SDT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khach_chot",
+              "displayName": "Khach_chot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chi_phi_tren_khach_hop_le",
+              "displayName": "Chi_phi_tren_khach_hop_le",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chi_phi_khach_tren_SDT",
+              "displayName": "Chi_phi_khach_tren_SDT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Doanh_thu",
+              "displayName": "Doanh_thu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ghi_chu",
+              "displayName": "ghi_chu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Trang_Thai",
+              "displayName": "Trang_Thai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Key",
+              "displayName": "Key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Thoi_diem_cap_nhat",
+              "displayName": "Thoi_diem_cap_nhat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nhom_quang_cao",
+              "displayName": "Nhom_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ten_id_quang_cao",
+              "displayName": "Ten_id_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Luot_hien_thi",
+              "displayName": "Luot_hien_thi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CPM",
+              "displayName": "CPM",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CTR_Link",
+              "displayName": "CTR_Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CTR_All",
+              "displayName": "CTR_All",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Xem_3s",
+              "displayName": "Xem_3s",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_25",
+              "displayName": "Video_25",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_50",
+              "displayName": "Video_50",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_75",
+              "displayName": "Video_75",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_95",
+              "displayName": "Video_95",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Hook_3s",
+              "displayName": "Ty_le_Hook_3s",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Giu_Chan_25",
+              "displayName": "Ty_le_Giu_Chan_25",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Xem_95",
+              "displayName": "Ty_le_Xem_95",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Ra_Web",
+              "displayName": "Ty_le_Ra_Web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tan_suat",
+              "displayName": "Tan_suat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ThruPlay",
+              "displayName": "ThruPlay",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Click_Ra_Web",
+              "displayName": "Click_Ra_Web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Click_All",
+              "displayName": "Click_All",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "83aef78c-0613-46ff-a876-2a39a883146a",
+      "name": "Ghi mới vào Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.3,
+      "position": [
+        464,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "kGB4h5UyGGcK5ibl",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1EHpEws60xWjJUaBfd_qDFLoeikMYvhUc9f9fR-HcL_s",
+          "mode": "list",
+          "cachedResultName": "ĐO LƯỜNG CONTENT HAPPYHOME",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EHpEws60xWjJUaBfd_qDFLoeikMYvhUc9f9fR-HcL_s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1598114539,
+          "mode": "list",
+          "cachedResultName": "BÁO_CÁO_QUẢNG_CÁO",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EHpEws60xWjJUaBfd_qDFLoeikMYvhUc9f9fR-HcL_s/edit#gid=1598114539"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Key"
+          ],
+          "schema": [
+            {
+              "id": "Ma_quang_cao",
+              "displayName": "Ma_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ngay",
+              "displayName": "Ngay",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chien_dich",
+              "displayName": "Chien_dich",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ten_quang_cao",
+              "displayName": "Ten_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chi_tieu",
+              "displayName": "Chi_tieu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nguoi_tiep_can",
+              "displayName": "Nguoi_tiep_can",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ngan_sach",
+              "displayName": "Ngan_sach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "click",
+              "displayName": "click",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mess_Comment",
+              "displayName": "Mess_Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khach_sai_tep",
+              "displayName": "Khach_sai_tep",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khach_hop_le",
+              "displayName": "Khach_hop_le",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SDT",
+              "displayName": "SDT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Khach_chot",
+              "displayName": "Khach_chot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chi_phi_tren_khach_hop_le",
+              "displayName": "Chi_phi_tren_khach_hop_le",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Chi_phi_khach_tren_SDT",
+              "displayName": "Chi_phi_khach_tren_SDT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Doanh_thu",
+              "displayName": "Doanh_thu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ghi_chu",
+              "displayName": "ghi_chu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Trang_Thai",
+              "displayName": "Trang_Thai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Key",
+              "displayName": "Key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Thoi_diem_cap_nhat",
+              "displayName": "Thoi_diem_cap_nhat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nhom_quang_cao",
+              "displayName": "Nhom_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ten_id_quang_cao",
+              "displayName": "Ten_id_quang_cao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Luot_hien_thi",
+              "displayName": "Luot_hien_thi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CPM",
+              "displayName": "CPM",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CTR_Link",
+              "displayName": "CTR_Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CTR_All",
+              "displayName": "CTR_All",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Xem_3s",
+              "displayName": "Xem_3s",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_25",
+              "displayName": "Video_25",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_50",
+              "displayName": "Video_50",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_75",
+              "displayName": "Video_75",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Video_95",
+              "displayName": "Video_95",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Hook_3s",
+              "displayName": "Ty_le_Hook_3s",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Giu_Chan_25",
+              "displayName": "Ty_le_Giu_Chan_25",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Xem_95",
+              "displayName": "Ty_le_Xem_95",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ty_le_Ra_Web",
+              "displayName": "Ty_le_Ra_Web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tan_suat",
+              "displayName": "Tan_suat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ThruPlay",
+              "displayName": "ThruPlay",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Click_Ra_Web",
+              "displayName": "Click_Ra_Web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Click_All",
+              "displayName": "Click_All",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "1e195561-4a8c-404e-9d46-fc2848bda33f",
+      "name": "Cập nhật vào Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.3,
+      "position": [
+        464,
+        192
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "kGB4h5UyGGcK5ibl",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function safeCount(nodeName) {\n  try {\n    return $(nodeName).all().length;\n  } catch (error) {\n    if (String(error?.message || error).includes(\"hasn't been executed\")) {\n      return 0;\n    }\n    throw error;\n  }\n}\n\nconst appends = safeCount('IF: Append?');\nconst updates = safeCount('IF: Update?');\n\nreturn [{\n  json: {\n    message: \"Success\",\n    appendCount: appends,\n    updateCount: updates\n  }\n}];"
+      },
+      "id": "0b9d4cf5-32c4-43fa-9b68-55068788c22f",
+      "name": "Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        96
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        192
+      ],
+      "id": "13de8d98-0a6a-4865-8940-312979a77264",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "connections": {
+    "Đọc toàn bộ Sheet": {
+      "main": [
+        [
+          {
+            "node": "Lấy cấu hình Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lấy cấu hình Meta": {
+      "main": [
+        [
+          {
+            "node": "Tạo mảng ngày",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tạo mảng ngày": {
+      "main": [
+        [
+          {
+            "node": "Lấy dữ liệu Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lấy dữ liệu Meta": {
+      "main": [
+        [
+          {
+            "node": "Xử lý dữ liệu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xử lý dữ liệu": {
+      "main": [
+        [
+          {
+            "node": "IF: Append?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF: Update?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Append?": {
+      "main": [
+        [
+          {
+            "node": "Clean Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Update?": {
+      "main": [
+        [
+          {
+            "node": "Clean Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Append": {
+      "main": [
+        [
+          {
+            "node": "Ghi mới vào Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Update": {
+      "main": [
+        [
+          {
+            "node": "Cập nhật vào Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ghi mới vào Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cập nhật vào Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Đọc toàn bộ Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule 07:30": {
+      "main": [
+        [
+          {
+            "node": "Đọc toàn bộ Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "3bfb4edb16a067933e9fcee4a4583c3ddd474de6aac2d762abdef6853e9e098e"
+  },
+  "pinData": {},
+  "versionId": "4de75bed-f013-4793-a473-a89de4fb7b4a",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2026-07-25T13:38:59.393Z",
+      "updatedAt": "2026-07-25T13:38:59.393Z",
+      "role": "workflow:owner",
+      "workflowId": "rz3Wya5lFay7ShVL",
+      "projectId": "2aDERxQbQRzE5TfX",
+      "project": {
+        "createdAt": "2026-07-25T13:20:04.995Z",
+        "updatedAt": "2026-07-25T13:29:28.313Z",
+        "id": "2aDERxQbQRzE5TfX",
+        "name": "Lộc Hưng <buivu201294@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "createdAt": "2026-07-25T13:20:04.995Z",
+            "updatedAt": "2026-07-25T13:20:04.995Z",
+            "role": "project:personalOwner",
+            "userId": "b8e3a3a0-815c-48a4-a558-c551e434f4b1",
+            "projectId": "2aDERxQbQRzE5TfX",
+            "user": {
+              "createdAt": "2026-07-25T13:20:04.340Z",
+              "updatedAt": "2026-07-26T04:00:01.000Z",
+              "id": "b8e3a3a0-815c-48a4-a558-c551e434f4b1",
+              "email": "buivu201294@gmail.com",
+              "firstName": "Lộc",
+              "lastName": "Hưng",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2026-07-25T13:32:18.540Z",
+                "personalization_survey_n8n_version": "1.103.2",
+                "companySize": "<20",
+                "companyType": "digital-agency",
+                "automationGoalSm": [
+                  "reporting"
+                ],
+                "role": "sales-and-marketing",
+                "reportedSource": "other"
+              },
+              "settings": {
+                "userActivated": false
+              },
+              "role": "global:owner",
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-07-26",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}
