@@ -1,6 +1,6 @@
 # Rules — n8n Meta Ads
 
-## 1. Safety Rules — Không được vi phạm
+## 1. Quy tắc an toàn tuyệt đối — không bao giờ vi phạm
 
 ### Production
 - Không patch production trực tiếp — luôn dùng TEST workflow trước.
@@ -24,18 +24,26 @@
 - Không ghi đè cột Nhóm B trong Google Sheet (business data protected).
 - Không tin silent success — luôn verify output data thực tế.
 
-## 2. Quy tắc vận hành — Cách AI làm việc trong Project này
+---
 
-### Thứ tự ưu tiên
-1. Continuity before optimization.
-2. Observability before patching.
-3. TEST workflow before production workflow.
-4. Canonical schemas before downstream KPI logic.
+## 2. Quy tắc tự chủ AI — phạm vi hành động
 
-### Khi thay đổi hệ thống
-- Test node-by-node trong recovery để isolate lỗi.
-- Execute Step để isolate, sau đó real runtime activation để verify.
-- Khi fix một workflow, kiểm tra ngay các workflow tương tự có cùng pattern.
+### Anti-context-drift
+Nếu AI định rewrite hoặc redesign khi chưa hiểu logic cũ → dừng lại, đọc README + RULES + STATUS + CASES liên quan trước, hỏi Human nếu vẫn chưa rõ.
+
+### Human final authority
+AI chỉ được: cảnh báo, so sánh, ghi nhớ, đề xuất, tóm tắt.
+Human quyết định cuối cho: production, credential, ngân sách, chiến lược.
+
+### Quy tắc B — Mọi thay đổi phải ghi vào WORKLOG
+Mọi thay đổi file dù nhỏ — sửa 1 dòng, xóa 1 file — phải ghi ngay vào `WORKLOG.md` Signal.
+Không có thay đổi nào được làm im lặng.
+
+### Memory routing — Ghi thông tin vào đâu
+- Trạng thái runtime → Project/STATUS.md
+- Credential, môi trường, deploy, test → Project/OPS/
+- Bài học đã xác minh → CASES/
+- Định hướng dài hạn → Project/ROADMAP.md
 
 ### Ghi nhớ và cập nhật
 - Không lưu raw conversations — chỉ lưu distilled operational knowledge.
@@ -48,7 +56,54 @@ Tự hỏi: "AI mới có phải điều tra lại việc này không?"
 - Nếu CÓ → cập nhật file phù hợp (STATUS, DECISIONS, RULES, hoặc ROADMAP).
 - Mức ưu tiên: CAO (production state, credential, data source) > TRUNG BÌNH (architecture decisions) > THẤP (giả thuyết bị bác bỏ).
 
-## 3. Constraints — Giới hạn kỹ thuật
+### Source of truth — Thứ tự ưu tiên khi đọc
+Project/RULES.md → Project/STATUS.md → CASES/ → Project/OPS/
+
+---
+
+## 3. Quy tắc Git
+
+### Quy tắc A — AI không được git push
+AI tuyệt đối không được chạy `git push`.
+Chỉ Human mới được push lên Git.
+AI chỉ được: `git add`, `git commit` — rồi dừng lại báo Human.
+
+### Thứ tự làm việc chuẩn
+1. Mở máy lên → git pull TRƯỚC.
+2. Làm việc — AI có thể `git add` + `git commit` thay Human, nhưng dừng lại ở đó.
+3. Human `git push` ngay sau khi AI báo đã commit xong.
+4. Chuyển sang máy khác → git pull TRƯỚC khi làm.
+
+### Không bao giờ
+- Làm việc trên máy chưa pull.
+- Để "ahead by N commits" qua đêm (AI commit xong phải báo Human push ngay, không để tồn đọng).
+- Push từ 2 máy cùng lúc mà không pull trước.
+
+### Sau git pull --rebase
+Không được quên bước push (do Human thực hiện) ngay sau khi AI commit:
+```bash
+git pull --rebase
+# AI: git add, git commit — rồi báo Human
+# Human: git push
+```
+
+### Nếu thấy "ahead by N commits"
+→ AI báo Human push ngay, không tự push, không làm việc tiếp cho đến khi đã push.
+
+---
+
+## 4. Quy tắc vận hành n8n
+
+### Thứ tự ưu tiên
+1. Continuity before optimization.
+2. Observability before patching.
+3. TEST workflow before production workflow.
+4. Canonical schemas before downstream KPI logic.
+
+### Khi thay đổi hệ thống
+- Test node-by-node trong recovery để isolate lỗi.
+- Execute Step để isolate, sau đó real runtime activation để verify.
+- Khi fix một workflow, kiểm tra ngay các workflow tương tự có cùng pattern.
 
 ### Schema
 - snake_case ASCII cho tất cả operational field names.
@@ -74,11 +129,12 @@ Tự hỏi: "AI mới có phải điều tra lại việc này không?"
 - Webhook reference files là FORENSIC ONLY — không modify.
 - Project operational memory self-contained trong folder project, không dùng global AI_MEMORY.
 
-## Cấu trúc mở rộng — Ngoại lệ được duyệt
+---
 
-OPS/ — thư mục vận hành được phép tạo theo chuẩn AI OS mở rộng.
-Lý do: chứa tài liệu vận hành đặc thù không thuộc cấu trúc AI OS chuẩn
-nhưng AI cần đọc khi tra cứu thông tin vận hành.
+## 5. Quy tắc mở rộng — Ngoại lệ được duyệt
+
+### OPS/ — thư mục vận hành được phép tạo theo chuẩn AI OS mở rộng
+Lý do: chứa tài liệu vận hành đặc thù không thuộc cấu trúc AI OS chuẩn nhưng AI cần đọc khi tra cứu thông tin vận hành.
 Chứa:
 - CREDENTIAL_INVENTORY.md — credential và workflow mapping
 - ENVIRONMENT_REGISTRY.md — biến môi trường đang dùng
@@ -89,53 +145,8 @@ Chứa:
 
 Khi gặp vấn đề liên quan đến credential, môi trường, deploy hoặc test → đọc OPS/ trước khi xử lý.
 
----
-
-## Quy tắc vận hành AI
-
-### Anti-context-drift
-Nếu AI định rewrite hoặc redesign khi chưa hiểu logic cũ → dừng lại, đọc README + RULES + STATUS + CASES liên quan trước, hỏi Human nếu vẫn chưa rõ.
-
-### Memory routing — Ghi thông tin vào đâu
-- Trạng thái runtime → Project/STATUS.md
-- Credential, môi trường, deploy, test → Project/OPS/
-- Bài học đã xác minh → CASES/
-- Định hướng dài hạn → Project/ROADMAP.md
-
-### Human final authority
-AI chỉ được: cảnh báo, so sánh, ghi nhớ, đề xuất, tóm tắt.
-Human quyết định cuối cho: production, credential, ngân sách, chiến lược.
-
-### Source of truth — Thứ tự ưu tiên khi đọc
-Project/RULES.md → Project/STATUS.md → CASES/ → Project/OPS/
-
-
-## Cấu trúc mở rộng — CASES/ cấp Project
+### CASES/ cấp Project
 CASES/ nằm trong Project/ — ngoại lệ được duyệt.
-Lý do: chứa knowledge base toàn Project (42 CASE + 7 PATTERN)
-không thuộc riêng Task nào — đặt ở Project/ hợp lý hơn.
+Lý do: chứa knowledge base toàn Project không thuộc riêng Task nào — đặt ở Project/ hợp lý hơn.
 AI đọc khi: gặp vấn đề cần tra cứu CASE hoặc PATTERN.
 Điều hướng qua: Project/CASES/CASE_INDEX.md
-
-## Quy tắc Git — bắt buộc
-
-### Thứ tự làm việc chuẩn
-1. Mở máy lên → git pull TRƯỚC
-2. Làm việc
-3. git push NGAY sau khi xong
-4. Chuyển sang máy khác → git pull TRƯỚC khi làm
-
-### Không bao giờ
-- Làm việc trên máy chưa pull
-- Để "ahead by N commits" qua đêm
-- Push từ 2 máy cùng lúc mà không pull trước
-
-### Sau git pull --rebase
-Luôn push ngay — không được quên:
-```bash
-git pull --rebase
-git push
-```
-
-### Nếu thấy "ahead by N commits"
-→ git push ngay, không làm việc tiếp.
