@@ -63,16 +63,16 @@ Project/RULES.md → Project/STATUS.md → CASES/ → Project/OPS/
 
 ## 3. Quy tắc Git
 
-### Quy tắc A — AI không được tự ý push khi chưa có xác nhận của Human
-AI không được tự ý push khi chưa có xác nhận của Human.
+### Quy tắc A — AI không tự ý push khi chưa có lệnh từ Human
+AI không tự ý push khi chưa có lệnh từ Human.
 
 Flow bắt buộc:
-1. AI làm xong → báo cáo đầy đủ.
-2. Human review → nói OK.
-3. AI mới được push.
+1. AI làm xong → báo cáo: làm gì, sửa gì, tại sao, kết quả.
+2. Chờ Human ra lệnh push.
+3. Human nói push → AI push ngay, không hỏi thêm.
 
-Nếu Human nói OK rõ ràng → AI push được.
-Nếu Human chưa review → không push dù Human có yêu cầu push gấp.
+Trách nhiệm review thuộc về Human.
+Human ra lệnh push = Human đã chấp nhận thay đổi.
 
 ### Thứ tự làm việc chuẩn
 1. Mở máy lên → git pull TRƯỚC.

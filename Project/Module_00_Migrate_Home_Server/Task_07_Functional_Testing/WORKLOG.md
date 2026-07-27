@@ -89,3 +89,15 @@ OPEN_TASKS:
 STALE_DOCS:
 - [ ] `RULES.md` section 3 — các đoạn "Không bao giờ", "Sau git pull --rebase", "Nếu thấy ahead by N commits" vẫn viết theo tinh thần "AI không bao giờ push" (bản Quy tắc A cũ) — cần Human xác nhận có nên cập nhật đồng bộ với Quy tắc A bản mới hay giữ nguyên (coi như default là Human push, chỉ push khi có OK là ngoại lệ)
       → Phát hiện khi: sửa Quy tắc A lần 2, 2026-07-27
+      → Vẫn mở: Human chưa trả lời ở lần sửa Quy tắc A thứ 3 này (2026-07-27) — giữ nguyên, chưa tự sửa
+
+### Nhật ký (tiếp — sửa Quy tắc A lần 3, 2026-07-27)
+- Human đổi lại nội dung Quy tắc A lần nữa: từ "push được sau khi Human OK" → "AI không tự ý push khi chưa có lệnh từ Human" (nhấn mạnh: trách nhiệm review thuộc Human, lệnh push của Human = đã chấp nhận thay đổi, AI không hỏi lại khi đã có lệnh).
+- Backup RULES.md trước khi sửa (`BACKUP/2026-07-27_08-25_before_RULES_QuyTacA_sua2/`).
+- Cập nhật đúng nội dung Human cung cấp.
+- Theo yêu cầu: chỉ git add + commit lần này, KHÔNG push — chờ Human ra lệnh push riêng.
+
+### Signal (tiếp)
+OPEN_TASKS:
+- [x] Sửa Quy tắc A lần 3 theo đúng nội dung Human cung cấp — đã ghi vào RULES.md
+- [ ] Chờ Human ra lệnh push commit này
