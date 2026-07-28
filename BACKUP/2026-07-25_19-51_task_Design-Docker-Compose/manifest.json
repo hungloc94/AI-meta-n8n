@@ -1,9 +1,0 @@
-{
-  "backup_date": "2026-07-25",
-  "backup_time": "19:51",
-  "backup_type": "task",
-  "task": "Task_04_Design_Docker_Compose",
-  "git_commit_before": "2aaac10",
-  "n8n_image": "n8nio/n8n:1.103.2",
-  "notes": "Design only — no docker compose up; .env secrets not included"
-}
