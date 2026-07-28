@@ -1,9 +1,9 @@
 # Status — Task 08: Switch Production
 
 ## Trạng thái hiện tại
-- **Tiến độ:** ~90% (Phase 1 HOÀN THÀNH; Phase 2 đang chạy tốt — Today Report đã tự động báo cáo đúng 2/2 lần thật hôm nay trên Home Server, 16:31 và 21:13. Còn chờ chu kỳ sáng mai cho 4 workflow còn lại)
-- **Bước đang làm:** Phase 2 — quan sát 24–48h theo PRODUCTION_PROMOTION_CHECKLIST Phase B. Mốc bắt đầu tính: 2026-07-27 13:55 (+07). Mốc quan trọng tiếp theo: 07:00–08:13 sáng mai (2026-07-28).
-- **Cập nhật lần cuối:** 2026-07-27 22:05 (+07), Claude Code
+- **Tiến độ:** ~90% (Phase 1 HOÀN THÀNH; Phase 2 đang chạy — chu kỳ sáng 2026-07-28 đã qua: 3/4 workflow success, 1/4 lỗi CASE-048 đã fix + verify lại thành công. Còn chờ 11:31/16:31/21:13 hôm nay + 1 chu kỳ sáng mai chạy sạch hoàn toàn để đủ điều kiện GO)
+- **Bước đang làm:** Phase 2 — quan sát 24–48h theo PRODUCTION_PROMOTION_CHECKLIST Phase B. Mốc bắt đầu tính: 2026-07-27 13:55 (+07). Có 1 lần restart n8n chủ động lúc 2026-07-28 ~10:11 (+07) để fix CASE-048 — không phải crash, nhưng là gián đoạn runtime cần loại trừ khỏi tiêu chí "không crash" khi đánh giá. Mốc quan trọng tiếp theo: 11:31/16:31/21:13 hôm nay (Today Report), rồi 07:00–08:13 sáng mai (2026-07-29) chạy hoàn toàn tự động không có fix xen vào.
+- **Cập nhật lần cuối:** 2026-07-28 10:49 (+07), Claude Code
 
 ## Đã hoàn thành (Phase 1 — HOÀN THÀNH)
 - ✅ Pre-check: n8n container healthy, .env/credentials đã verify PASS ở Task 07
@@ -24,8 +24,17 @@
 
 ## HANDOVER
 - Người giao: Claude Code
-- Người nhận: Anh Lộc
-- Đã làm xong: Phase 1 xong toàn bộ; Phase 2 đã PASS 2/2 lần thật hôm nay (Today Report 16:31, 21:13)
-- Cần làm tiếp: Theo dõi chu kỳ sáng mai 07:00–08:13 (mốc quan trọng nhất còn lại) rồi tiếp tục quan sát đủ 24–48h
-- Xong khi nào: Qua 24–48h không phát sinh lỗi/trùng lặp → Human xác nhận GO
-- Trạng thái: 🔄 Đang làm — Phase 2 quan sát, tiến triển tốt
+- Người nhận: Anh Lộc (theo dõi thụ động) + AI session tiếp theo nếu được gọi lại vào Task này
+- Đã làm xong: Phase 1 xong toàn bộ; chu kỳ sáng 2026-07-28 đã qua (3/4 success, 1/4 lỗi
+  CASE-048 đã fix + verify lại thành công qua execution log thật, không phải chỉ đoán)
+- Cần làm tiếp:
+  1. Theo dõi Today Report 11:31, 16:31, 21:13 hôm nay (2026-07-28) — xác nhận Telegram đúng
+  2. Theo dõi chu kỳ sáng mai 07:00–08:13 (2026-07-29) — mốc quan trọng nhất còn lại,
+     phải chạy hoàn toàn tự động, không có fix nào xen giữa chừng như hôm nay
+  3. Sau đủ PASS → hỏi anh Lộc xác nhận GO → cập nhật STATUS.md này + Module_00/STATUS.md
+     + Project/STATUS.md (đang stale từ 2026-07-03) → Backup
+- Xong khi nào: Qua 24–48h không phát sinh lỗi/trùng lặp mới → Human xác nhận GO
+- Trạng thái: 🔄 Đang làm — Phase 2 quan sát tiếp tục thụ động. **AI session hiện tại
+  đã chuyển sang làm `Module_02_Stabilize/Task_01_System_User_Token` theo yêu cầu anh
+  Lộc — Task 08 không cần AI action chủ động, chỉ cần kiểm tra khi được hỏi hoặc khi
+  có sự cố mới.**

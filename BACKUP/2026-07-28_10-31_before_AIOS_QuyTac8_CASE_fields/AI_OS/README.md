@@ -471,8 +471,6 @@ PROPOSAL:
 ## CASE-001: Google Sheet Range Error
 - **Ngày phát hiện:** 2026-07-10
 - **Ngày xác minh:** 2026-07-12
-- **Mức độ ảnh hưởng:** ACTIVE production / TEST only
-- **Đã báo Human:** [ngày giờ] — hoặc "CHƯA" (không được để trống)
 
 ### Vấn đề
 Sheet trả về dữ liệu sai range khi query ngày cuối tháng.
@@ -488,8 +486,6 @@ Luôn kiểm tra offset header khi query Google Sheet theo range động.
 ```
 
 > **Lưu ý:** CASE ghi ngày phát hiện và ngày xác minh để AI đánh giá thông tin còn phù hợp không — đặc biệt khi thư viện hoặc API thay đổi theo thời gian.
->
-> **Lưu ý bắt buộc:** Nếu **Mức độ ảnh hưởng = ACTIVE production** mà **Đã báo Human = CHƯA** → vi phạm Quy tắc 8 (chương "AI Workflow") — AI phải báo Human ngay trước khi làm tiếp bất kỳ việc gì khác.
 # 3. AI Workflow
 
 ## Mục tiêu
@@ -790,17 +786,6 @@ Chờ Human xác nhận mới ghi.
 
 ### Quy tắc 7 — Hỏi khi không rõ bước hiện tại
 Nếu STATUS.md không ghi rõ đang ở bước nào → AI hỏi Human ngay, không tự suy đoán.
-
-### Quy tắc 8 — Escalation ngay khi phát hiện lỗi ảnh hưởng hệ thống ACTIVE
-Phát hiện bug/lỗi/blocker liên quan tới bất kỳ workflow hoặc hệ thống đang chạy
-ACTIVE (production) → AI phải hỏi Human NGAY trong cùng phản hồi, dùng tiêu đề cố
-định dễ nhận diện: `🚨 CẦN HUMAN QUYẾT ĐỊNH NGAY`.
-
-Không được chỉ ghi vào CASE/WORKLOG rồi tiếp tục việc khác — ghi CASE là bổ sung
-tra cứu, không phải thay thế cho việc hỏi trực tiếp.
-
-Áp dụng kể cả khi lỗi nằm ngoài phạm vi Task đang làm — nếu ảnh hưởng workflow
-ACTIVE, vẫn phải hỏi ngay, không chờ đến khi có Task riêng mới báo.
 
 ---
 

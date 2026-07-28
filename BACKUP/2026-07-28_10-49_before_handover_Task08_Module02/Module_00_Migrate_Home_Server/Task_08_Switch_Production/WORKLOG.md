@@ -85,47 +85,6 @@ PROPOSAL:
   ghi nhận minh bạch.
 - CASE-048 đã cập nhật status → Đã fix.
 
-- Verify bằng execution log thật (query `database.sqlite` read-only, không qua UI) cho
-  chu kỳ sáng nay (giờ UTC trong DB, +07 để ra giờ thật):
-  | Giờ (+07) | Workflow | Kết quả |
-  |---|---|---|
-  | 07:00 | Google Sheets Health Check | success |
-  | 07:05 | Meta API Health Check | success |
-  | 07:30 | Meta Ads Daily Sheet Update | error (đúng CASE-048, trước khi fix) |
-  | 08:13 | Yesterday Report | success |
-  → Xác nhận: cả chu kỳ chỉ lỗi đúng 1 chỗ, đúng bug đã biết. 3/4 sạch.
-- ~10:24 — chạy thử tay (mode `manual`) "Meta Ads Daily Sheet Update" sau khi fix →
-  success. Xác nhận code mới hoạt động đúng trên runtime thật.
-- Cập nhật `AI_OS/README.md` (Human duyệt): thêm **Quy tắc 8 — Escalation ngay khi phát
-  hiện lỗi ảnh hưởng hệ thống ACTIVE** (chương AI Workflow) + 2 field bắt buộc trong
-  template CASE (`Mức độ ảnh hưởng`, `Đã báo Human`). Lý do: CASE-048 phát hiện
-  2026-07-27 nhưng không được escalate ngay, chỉ ghi CASE rồi im — gap này giờ có rule
-  cụ thể để chặn tái diễn. Backup trước khi sửa tại
-  `BACKUP/2026-07-28_10-31_before_AIOS_QuyTac8_CASE_fields/`.
-- Đồng bộ `AI_OS/README.md` đã cập nhật sang `Projects/AdsCheckTobi/AI_OS/README.md`
-  (Human duyệt) — file đó trước giờ chỉ là placeholder trống, giờ có AI_OS thật.
-- Backfill CASE-048 với 2 field mới (Human duyệt): Mức độ ảnh hưởng ghi rõ TEST lúc
-  phát hiện (27/7) → ACTIVE production lúc tái diễn (28/7); Đã báo Human ghi CHƯA cho
-  lần đầu (chính là bằng chứng gap dẫn tới Quy tắc 8), CÓ cho lần tái diễn.
-- Theo yêu cầu anh Lộc: tạm dừng active work ở Task 08, chuyển sang
-  `Module_02_Stabilize/Task_01_System_User_Token`. Task 08 Phase 2 tiếp tục quan sát
-  thụ động — không cần AI action trừ khi có lỗi mới hoặc tới mốc xác nhận GO.
-
 ### Signal
 OPEN_TASKS:
 - [x] Fix CASE-048 (safeCount đa chuỗi) → Hoàn thành lúc: 2026-07-28, đã verify 5/5 active
-- [x] Verify execution log thật chu kỳ sáng nay (07:00-08:13) → Hoàn thành lúc: 2026-07-28
-      ~10:35 — 3/4 success, 1/4 lỗi đúng CASE-048 (đã fix + verify lại thành công)
-- [ ] Theo dõi "Today Report" chạy thật 11:31 hôm nay — lần chạy thật đầu tiên sau khi
-      fix CASE-048, cần xác nhận Telegram báo đúng
-      → Phát hiện khi: chuẩn bị chuyển sang Module 02
-- [ ] Theo dõi tiếp 16:31 và 21:13 hôm nay (Today Report)
-- [ ] Quan sát chu kỳ sáng mai (2026-07-29, 07:00 → 08:13) chạy hoàn toàn tự động,
-      không có fix nào xen giữa chừng — mốc quan trọng nhất còn lại của Phase 2
-- [ ] Sau đủ 24–48h PASS → anh Lộc xác nhận GO → cập nhật STATUS.md Task 08 +
-      Module_00/STATUS.md + Project/STATUS.md (đang stale từ 2026-07-03) → Backup
-
-PROPOSAL:
-- [x] Cập nhật AI_OS/README.md (Quy tắc 8 + field CASE) → Hoàn thành 2026-07-28, Human
-      đã duyệt
-- [x] Backfill CASE-048 → Hoàn thành 2026-07-28, Human đã duyệt
