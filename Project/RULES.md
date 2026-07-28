@@ -156,3 +156,28 @@ CASES/ nằm trong Project/ — ngoại lệ được duyệt.
 Lý do: chứa knowledge base toàn Project không thuộc riêng Task nào — đặt ở Project/ hợp lý hơn.
 AI đọc khi: gặp vấn đề cần tra cứu CASE hoặc PATTERN.
 Điều hướng qua: Project/CASES/CASE_INDEX.md
+
+## Quy tắc Backup tạm thời
+
+### Mục đích
+Backup trước khi sửa chỉ để rollback nếu có lỗi — không phải lưu trữ lâu dài.
+
+### Vòng đời backup
+Trước khi sửa → tạo backup
+        ↓
+Sửa xong → verify kết quả
+        ↓
+Kết quả OK → xóa backup ngay
+Kết quả FAIL → rollback từ backup → xóa backup sau khi rollback xong
+
+### Quy tắc bắt buộc
+- Backup chỉ tồn tại trong thời gian làm việc của 1 Task
+- Khi Task hoàn thành → AI xóa toàn bộ backup của Task đó
+- Không để backup tồn tại qua đêm nếu Task đã xong
+- BACKUP/ không được commit lên Git (đã có .gitignore)
+
+### AI thực hiện
+Sau khi verify kết quả OK:
+1. Xóa thư mục backup liên quan
+2. Ghi vào WORKLOG: "Đã xóa backup <tên> — kết quả verify OK"
+3. Báo anh Lộc
