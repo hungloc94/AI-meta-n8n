@@ -6,7 +6,8 @@
 **Cập nhật lần cuối:** 2026-09-08 — Claude Code
 
 ## Trạng thái
-- **Task status:** 🟡 IN_PROGRESS
+- **Task status:** 🟢 PASS TẠM THỜI / MONITORING (2026-09-15) — verify PASS qua chu kỳ thật: Sheet 0 trùng, báo cáo 1 tin/sáng (send 57.6s, không retry). KHÔNG đóng cứng: giữ theo dõi send Telegram còn chậm. Trigger mở lại + hành động: xem `WORKLOG.md` mục "[MONITORING]".
+- ~~🟡 IN_PROGRESS~~
 - **Plan đã điền:** 2026-09-08 (tái cấu trúc sang PHASE 0–5 + Risk/Rollback/DoD).
 - **Phase hiện tại:** **PHASE 4 — ĐANG DỞ.** 🔑 Đã tìm ra **root cause thật (2026-09-09)**: có **workflow clone lỗi `T0x1qzedADrmj1LA` ("TEST Daily Sheet Update Task09") vẫn active + chạy 07:30**, dùng append cũ → nguồn đẻ trùng hàng ngày. Đã **tắt clone + bật bản upsert + restart n8n**. Verify: chỉ còn 1 workflow production active = upsert.
 - **Còn lại:** (a) dọn nốt **62 dup tồn** (danh sách 61 auto + 1 gộp đã bôi màu; anh đang xoá tay) → verify **0 dup**; (b) monitor 07:30 mai (chỉ upsert chạy); (c) PHASE 5: xoá hẳn clone `T0x1qzedADrmj1LA` + các workflow test, commit canonical, slice/timezone, update docs.

@@ -25,6 +25,8 @@ Nguyên tắc thiết kế cho tương lai:
 - **Data trên app/database:** phải có alert tự động (unique constraint, monitoring query, hoặc notification).
 - **Tuyệt đối không** để người dùng tự phát hiện data trùng bằng mắt.
 
+> **Cập nhật 2026-09-15 (DEFERRED):** anh Lộc đã tự làm **conditional formatting** trên Sheet — tự bôi màu các dòng trùng Key (cột S) khi trùng nhau. Đã có cơ chế phát hiện trùng ở tầng Sheet → workflow auto-alert Telegram **chưa cần** lúc này. Bài học vẫn đúng làm nguyên tắc; chỉ hoãn phần triển khai auto-alert.
+
 ---
 
 ## Phụ lục — chuỗi sự cố (tóm tắt)
