@@ -33,7 +33,7 @@ AI_OS/
 
 | Ngày | Slug | Trạng thái | Tóm tắt | File |
 | --- | --- | --- | --- | --- |
-| 2026-10-02 | missing-ads-data | PENDING | Node `/insights` thiếu pagination → ad mất im lặng khi >25 ad/ngày | `incidents/2026-10-02_missing-ads-data.md` |
+| 2026-10-02 | missing-ads-data | DONE (2026-10-06) | Node `/insights` thiếu pagination → mất 5–8 ad/ngày; fix verify PASS trên production | `incidents/2026-10-02_missing-ads-data.md` |
 
 ## Template Reuse
 
@@ -44,5 +44,7 @@ Common logic is centralized in `templates/ops/`:
 - Network verification matrix.
 - Incident report section model.
 - Rollback procedure template.
+- API integration checklist (pagination, rate limit, page size) — đọc trước khi tích hợp
+  API ngoài nào mới; xem `templates/ops/API_INTEGRATION_CHECKLIST.md`.
 
 Skills should reference these shared templates instead of duplicating broad procedural text.

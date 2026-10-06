@@ -60,8 +60,7 @@ responseData = response;   // lấy nguyên object, KHÔNG gộp page
 - Key `${date_start}_${ad_id}` unique → không collision.
 - `level=ad` đúng; date range đúng (`numDays=7`); không lọc status/spend khi fetch.
 
-**Confidence:** CAO (bằng chứng code xác định) — nhưng **chưa có verify định lượng**
-(số ad thiếu thực tế chưa đếm được do session không có quyền truy cập Meta token).
+**Confidence:** CAO — đã có **bằng chứng định lượng** (đo 2026-10-06, xem mục Phạm vi ảnh hưởng).
 
 ## Data Flow Trace
 
@@ -75,22 +74,64 @@ Meta Insights API (page 1: 25 ad + paging.next)
 
 **Mất tại:** `Lấy dữ liệu Meta` — không gộp các page.
 
+**Số liệu trước fix (đo 2026-10-06, 7 ngày):** 175 rows lấy được / 220 rows thực tế → **mất 45 rows**.
+Chốt cứng ở 25 ad/ngày (default page size Meta), `paging.next` tồn tại **mọi ngày**.
+
 ## Phạm vi ảnh hưởng
 
-- **Chưa xác định định lượng** (chưa có token để đếm). Giả thuyết: mọi ngày có >25 ad
-  (page size mặc định) đều bị thiếu phần đuôi.
-- Ảnh hưởng **cột Nhóm A** (dữ liệu Meta ghi). Nhóm B không bị ảnh hưởng trực tiếp, nhưng
-  báo cáo downstream đọc Nhóm A sẽ thiếu.
+**Trước fix:** mất **5–8 ad mỗi ngày** trên mọi ngày có >25 ad. Đo 2026-09-29 → 10-05:
+tổng 45 rows bị thiếu trên 7 ngày (175/220).
+
+| Ngày | Trước fix | Sau fix | Thiếu |
+|---|---|---|---|
+| 2026-09-29 | 25 | 32 | 7 |
+| 2026-09-30 | 25 | 33 | 8 |
+| 2026-10-01 | 25 | 32 | 7 |
+| 2026-10-02 | 25 | 33 | 8 |
+| 2026-10-03 | 25 | 30 | 5 |
+| 2026-10-04 | 25 | 30 | 5 |
+| 2026-10-05 | 25 | 30 | 5 |
+
+Ảnh hưởng **cột Nhóm A** (dữ liệu Meta ghi). Nhóm B không bị ảnh hưởng trực tiếp, nhưng
+báo cáo downstream đọc Nhóm A sẽ thiếu. Phạm vi thời gian: **toàn bộ vòng đời workflow**
+(lỗi có từ khi node được viết — không phải sự cố mới phát sinh).
 
 ## Trạng thái
 
 - Phát hiện : 2026-10-02
-- Fix        : **PENDING** — Task_04 (`Project/Module_02_Stabilize/Task_04_Fix_Missing_Ads_Pagination/`)
-- Verified   : PENDING
+- Fix        : **DONE** (2026-10-06) — lên production, verify PASS
+- Verified   : **DONE** (2026-10-06 23:12 UTC) — xem kết quả bên dưới
 
 ## Fix đã áp dụng
 
-_(điền sau khi sửa xong)_
+Node `Lấy dữ liệu Meta` (workflow `rz3Wya5lFay7ShVL`):
+1. Thêm `&limit=1000` vào URL `/insights`.
+2. Thêm pagination loop: đọc `paging.cursors.after`, gộp `data[]` các page,
+   guard `MAX_PAGES=10`, log số page/ngày.
+
+**Verify trên TEST_DEUP** (workflow `nILRkiamvwXexV0o`, active=false, đã xoá sau khi production PASS):
+- Run 1 `appendCount=249`; Run 2 `appendCount=0, updateCount=249` → idempotent.
+- Diff Meta API vs Sheet (8 ngày): 249 vs 249 → **lệch = 0**.
+- Nhóm B nguyên vẹn (9/9 cột; 1829/1829 dòng có dữ liệu); 0 Key trùng.
+
+**Verify trên production thật** (`rz3Wya5lFay7ShVL`, 2026-10-06 23:12 UTC):
+```
+docker exec n8n n8n execute --id=rz3Wya5lFay7ShVL
+EXIT=0, resultData.error=None, Ghi vào Sheet: success
+appendCount=141, updateCount=101, total=242
+8/8 ngày: pages=1, truncated=false
+```
+
+Code nguồn: `BACKUP/task-fix-pagination/new_insights_node.js`.
+Canonical: `Project/WORKFLOWS/Meta_Ads_Daily_Sheet_Update.json` (commit `8ca892a`, đã push remote 2026-10-07).
+Chi tiết: `Project/Module_02_Stabilize/Task_04_Fix_Missing_Ads_Pagination/`.
+
+## Bài học tổng quát (đã tách sang cấp AI_OS)
+
+Bài học **"luôn kiểm tra pagination khi gọi API bên ngoài"** áp dụng cho MỌI tích hợp API
+tương lai, không riêng Meta Ads — đã nâng cấp thành checklist dùng lại:
+`AI_OS/templates/ops/API_INTEGRATION_CHECKLIST.md`. Đọc file đó **trước khi** viết bất kỳ
+node/script gọi API ngoài nào mới.
 
 ## Bài học
 
