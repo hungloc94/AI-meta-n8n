@@ -29,6 +29,12 @@ AI_OS/
 | `rollback_fail2ban` | Restore a known Fail2ban backup and verify rollback when authorized. | Active config path, backup path, jail name, trusted networks. | Rollback report with commands, files, services, and verification. | Explicit write approval and sudo. | Fail2ban, systemd, backup file. |
 | `highlight_duplicate_rows` | Bôi màu dòng duplicate trên Google Sheet để review trực quan trước khi xóa. | `/tmp/dup_highlight.json` (`[{row,color}]`); spreadsheetId; gid tab. | Các dòng được bôi màu (vàng=xóa, cam=gộp, trắng=reset) trên Sheet. | n8n manual run + Google service account credential. | n8n, Google Sheets API, workflow `QWowp4oT9PA1iJTO`. |
 
+## Incident Log
+
+| Ngày | Slug | Trạng thái | Tóm tắt | File |
+| --- | --- | --- | --- | --- |
+| 2026-10-02 | missing-ads-data | PENDING | Node `/insights` thiếu pagination → ad mất im lặng khi >25 ad/ngày | `incidents/2026-10-02_missing-ads-data.md` |
+
 ## Template Reuse
 
 Common logic is centralized in `templates/ops/`:
