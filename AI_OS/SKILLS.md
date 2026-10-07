@@ -46,5 +46,7 @@ Common logic is centralized in `templates/ops/`:
 - Rollback procedure template.
 - API integration checklist (pagination, rate limit, page size) — đọc trước khi tích hợp
   API ngoài nào mới; xem `templates/ops/API_INTEGRATION_CHECKLIST.md`.
+- API integration lessons (backfill `time_range`, idempotency, dữ liệu user-owned) —
+  `templates/ops/API_INTEGRATION_LESSONS.md`.
 
 Skills should reference these shared templates instead of duplicating broad procedural text.
